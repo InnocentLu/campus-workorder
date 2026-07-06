@@ -1,0 +1,167 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// --------------------- User ---------------------
+enum UserRole {
+  STU // 学生
+  TCH // 教师
+  WRK // 维修工
+  ADM // 管理员
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique @db.VarChar(50)
+  password   String   @db.VarChar(255)
+  realName   String   @map("real_name") @db.VarChar(50)
+  role       UserRole @default(STU)
+  phone      String?  @db.VarChar(20)
+  email      String?  @db.VarChar(100)
+  department String?  @db.VarChar(100)
+  studentId  String?  @map("student_id") @db.VarChar(50)
+  employeeId String?  @map("employee_id") @db.VarChar(50)
+  avatar     String?  @db.VarChar(255)
+  status     String   @default("ACTIVE") @db.VarChar(20) // ACTIVE | DISABLED
+
+  // 提交的工单
+  submittedOrders WorkOrder[] @relation("Submitter")
+  // 被指派的工单
+  assignedOrders  WorkOrder[] @relation("Assignee")
+  // 指派的工单（管理员）
+  assignedByOrders WorkOrder[] @relation("Assigner")
+  // 维修记录
+  repairRecords   RepairRecord[]
+  // 通知
+  notifications   Notification[]
+  // 操作日志
+  orderLogs       OrderLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("user")
+}
+
+// --------------------- WorkOrder ---------------------
+enum OrderPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum OrderStatus {
+  PENDING    // 待处理
+  ASSIGNED   // 已派单
+  PROCESSING // 处理中
+  COMPLETED  // 已完成
+  CLOSED     // 已关闭
+  CANCELLED  // 已取消
+}
+
+model WorkOrder {
+  id       Int      @id @default(autoincrement())
+  orderNo  String   @unique @map("order_no") @db.VarChar(30)
+  title    String   @db.VarChar(200)
+  description String? @db.Text
+  category String   @db.VarChar(50) // 水电/网络/家具/空调/门窗/其他
+  priority OrderPriority @default(MEDIUM)
+  status   OrderStatus   @default(PENDING)
+
+  // 提交人
+  submitterId   Int  @map("submitter_id")
+  submitter     User @relation("Submitter", fields: [submitterId], references: [id])
+  submitterRole UserRole @map("submitter_role") // 提交时的角色
+  submitterName String? @map("submitter_name") @db.VarChar(50)
+
+  // 维修工
+  assigneeId Int?  @map("assignee_id")
+  assignee   User? @relation("Assignee", fields: [assigneeId], references: [id])
+  // 派单人
+  assignerId Int?  @map("assigner_id")
+  assigner   User? @relation("Assigner", fields: [assignerId], references: [id])
+
+  location     String? @db.VarChar(200)
+  contactPhone String? @map("contact_phone") @db.VarChar(20)
+  scheduledTime DateTime? @map("scheduled_time")
+  images       Json? // 图片URL数组
+
+  // 时间线
+  acceptedAt   DateTime? @map("accepted_at")
+  processingAt DateTime? @map("processing_at")
+  completedAt  DateTime? @map("completed_at")
+  closedAt     DateTime? @map("closed_at")
+
+  // 评价
+  rating   Int?    @db.TinyInt
+  feedback String? @db.Text
+
+  // 关联
+  repairRecords RepairRecord[]
+  orderLogs     OrderLog[] @relation("OrderLogs")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([submitterId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([category])
+  @@map("work_order")
+}
+
+// --------------------- RepairRecord ---------------------
+model RepairRecord {
+  id        Int      @id @default(autoincrement())
+  orderId   Int      @map("order_id")
+  order     WorkOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  cost      Decimal? @default(0) @db.Decimal(10, 2)
+  usedParts String?  @map("used_parts") @db.Text
+  handlerId Int?     @map("handler_id")
+  handler   User?    @relation(fields: [handlerId], references: [id])
+  images    Json?    // 图片URL数组
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("repair_record")
+}
+
+// --------------------- Notification ---------------------
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @db.VarChar(50)
+  title     String   @db.VarChar(200)
+  content   String?  @db.Text
+  link      String?  @db.VarChar(255)
+  isRead    Boolean  @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("notification")
+}
+
+// --------------------- OrderLog ---------------------
+model OrderLog {
+  id         Int       @id @default(autoincrement())
+  orderId    Int       @map("order_id")
+  order      WorkOrder @relation("OrderLogs", fields: [orderId], references: [id])
+  operatorId Int?      @map("operator_id")
+  operator   User?     @relation(fields: [operatorId], references: [id])
+  action     String    @db.VarChar(50)
+  remark     String?   @db.Text
+
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([orderId])
+  @@map("order_log")
+}
