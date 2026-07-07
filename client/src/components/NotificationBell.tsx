@@ -117,7 +117,7 @@ export default function NotificationBell() {
                   <div className="flex items-center gap-2">
                     {isAdmin && (
                       <button
-                        onClick={() => { setOpen(false); setShowBroadcast(true); }}
+                        onClick={(e) => { e.stopPropagation(); setOpen(false); setTimeout(() => setShowBroadcast(true), 100); }}
                         className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-500 transition-colors"
                         aria-label="发送广播"
                       >
@@ -217,7 +217,7 @@ export default function NotificationBell() {
                   <input
                     value={bcTitle} onChange={(e) => setBcTitle(e.target.value)}
                     placeholder="广播标题"
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-100 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                   />
                 </div>
                 <div>
@@ -225,7 +225,7 @@ export default function NotificationBell() {
                   <textarea
                     value={bcContent} onChange={(e) => setBcContent(e.target.value)}
                     rows={3} placeholder="广播内容（可选）"
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-100 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
+                    className="w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
                   />
                 </div>
               </div>
