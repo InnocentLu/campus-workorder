@@ -41,7 +41,8 @@ model User {
   // 维修记录
   repairRecords    RepairRecord[]
   // 通知
-  notifications    Notification[]
+  notifications     Notification[]
+  sentNotifications Notification[] @relation("NotificationSender")
   // 操作日志
   orderLogs        OrderLog[]
 
@@ -139,9 +140,11 @@ model RepairRecord {
 // --------------------- Notification ---------------------
 model Notification {
   id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  senderId  Int?     @map("sender_id")
+  sender    User?    @relation("NotificationSender", fields: [senderId], references: [id])
+  type      String   @default("ORDER_STATUS") // ORDER_STATUS | ASSIGN | BROADCAST | CONFIRM_REQUEST
   title     String
   content   String?
   link      String?
@@ -150,6 +153,7 @@ model Notification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
+  @@index([senderId])
   @@map("notification")
 }
 

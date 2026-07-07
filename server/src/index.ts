@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import orderRoutes from './routes/orders';
 import statisticsRoutes from './routes/statistics';
+import notificationRoutes from './routes/notifications';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/statistics', statisticsRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
