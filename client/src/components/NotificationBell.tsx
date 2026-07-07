@@ -188,18 +188,18 @@ export default function NotificationBell() {
         </AnimatePresence>
       </div>
 
-      {/* Broadcast Modal */}
+      {/* Broadcast Modal — rendered at fragment level to avoid parent clipping */}
       <AnimatePresence>
         {showBroadcast && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setShowBroadcast(false)}
           >
             <motion.div
-              initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+              initial={{ scale: 0.95, y: -20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: -20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl"
+              className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl max-h-[70vh] overflow-auto"
             >
               <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-slate-700">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
