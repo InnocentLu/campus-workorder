@@ -26,9 +26,11 @@ model User {
   department String?
   studentId  String?  @map("student_id")
   employeeId String?  @map("employee_id")
-  avatar     String?
-  trade      String?  // 工种：水电维修/门窗修缮/网络故障/空调检修/墙面修补/家具维修
-  status     String   @default("ACTIVE") // ACTIVE | DISABLED
+  avatar       String?
+  trade        String?  // 工种
+  status       String   @default("ACTIVE")
+  loginAttempts Int     @default(0) @map("login_attempts")
+  lockUntil    DateTime? @map("lock_until")
 
   // 提交的工单
   submittedOrders  WorkOrder[]    @relation("Submitter")

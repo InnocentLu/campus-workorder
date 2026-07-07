@@ -51,7 +51,7 @@ router.put('/me/password', async (req: AuthRequest, res: Response) => {
   try {
     const schema = z.object({
       oldPassword: z.string().min(1),
-      newPassword: z.string().min(6, '新密码至少6位'),
+      newPassword: z.string().min(8, '新密码至少8位').regex(/[a-zA-Z]/, '密码必须包含字母').regex(/[0-9]/, '密码必须包含数字'),
     });
     const { oldPassword, newPassword } = schema.parse(req.body);
     const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
@@ -99,6 +99,7 @@ router.get('/', rbac('ADM'), async (req: AuthRequest, res: Response) => {
           id: true, username: true, realName: true, role: true,
           phone: true, email: true, department: true,
           studentId: true, employeeId: true, avatar: true, trade: true, status: true,
+          loginAttempts: true, lockUntil: true,
           createdAt: true, updatedAt: true,
         },
       }),

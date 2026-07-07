@@ -156,7 +156,9 @@ export default function Login() {
     if (!/^[a-zA-Z0-9]{4,20}$/.test(f.username)) return '用户名需为4-20位字母或数字';
     if (!f.studentId.trim()) return '请输入学号或工号';
     if (!f.department.trim()) return '请输入院系或部门名称';
-    if (f.password.length < 6) return '密码至少6位';
+    if (f.password.length < 8) return '密码至少8位';
+    if (!/[a-zA-Z]/.test(f.password)) return '密码必须包含字母';
+    if (!/[0-9]/.test(f.password)) return '密码必须包含数字';
     if (f.password !== f.confirmPassword) return '两次密码不一致';
     return null;
   };
