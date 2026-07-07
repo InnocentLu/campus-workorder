@@ -7,6 +7,7 @@ import { getRoleLabel, formatDate, cn } from '@/lib/utils';
 import { ScrollReveal, GlassCard } from '@/components/animations';
 import {
   Plus, X, Search, Phone, Copy, Wrench, Loader2, Shield,
+  Upload, Download, FileSpreadsheet, AlertCircle,
 } from 'lucide-react';
 
 /* ── Trades list (matches TradeManagement) ── */
@@ -31,6 +32,16 @@ export default function UserManagement() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Import modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{
+    imported: number;
+    skipped: number;
+    errors: { row: number; message: string }[];
+  } | null>(null);
 
   const fetchUsers = () => {
     setLoading(true);
@@ -107,6 +118,62 @@ export default function UserManagement() {
     } catch { toast.error('操作失败'); }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      const res = await client.get('/users/template', { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'user_import_template.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success('模板下载成功');
+    } catch {
+      toast.error('模板下载失败');
+    }
+  };
+
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImportFile(file);
+      setImportResult(null);
+    }
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importFile) {
+      toast.error('请先选择文件');
+      return;
+    }
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', importFile);
+      const res = await client.post('/users/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.code === 200) {
+        setImportResult(res.data.data);
+        toast.success(res.data.message || '导入完成');
+        fetchUsers();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || '导入失败');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const openImportModal = () => {
+    setImportFile(null);
+    setImportResult(null);
+    setShowImportModal(true);
+  };
+
   const copyPhone = (phone: string) => {
     navigator.clipboard.writeText(phone).then(() => toast.success('号码已复制')).catch(() => toast.error('复制失败'));
   };
@@ -122,9 +189,14 @@ export default function UserManagement() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">用户管理</h2>
             <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">共 {total} 个用户</p>
           </div>
-          <Button onClick={openCreate} className="gap-1.5">
-            <Plus className="w-4 h-4" /> 添加用户
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={openImportModal} className="gap-1.5">
+              <Upload className="w-4 h-4" /> 批量导入
+            </Button>
+            <Button onClick={openCreate} className="gap-1.5">
+              <Plus className="w-4 h-4" /> 添加用户
+            </Button>
+          </div>
         </div>
       </ScrollReveal>
 
@@ -409,6 +481,187 @@ export default function UserManagement() {
                   {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
                   {editing ? '保存修改' : '创建用户'}
                 </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Import Modal ── */}
+      <AnimatePresence>
+        {showImportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowImportModal(false)}
+            aria-modal="true"
+            role="dialog"
+            aria-label="批量导入用户"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl"
+            >
+              <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 rounded-t-2xl z-10">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  批量导入用户
+                </h3>
+                <Button variant="ghost" size="icon" onClick={() => setShowImportModal(false)} aria-label="关闭">
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              <div className="p-5 space-y-5">
+                {/* Step 1: Download template */}
+                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50">
+                  <div className="flex items-start gap-3">
+                    <FileSpreadsheet className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-800 dark:text-blue-300">第一步：下载模板</p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                        请先下载 Excel 模板，按照模板格式填写用户信息
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDownloadTemplate}
+                        className="mt-3 gap-1.5"
+                      >
+                        <Download className="w-3.5 h-3.5" /> 下载模板
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 2: Upload file */}
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-slate-700/50 border border-gray-100 dark:border-slate-700">
+                  <div className="flex items-start gap-3">
+                    <Upload className="w-5 h-5 text-gray-600 dark:text-slate-400 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800 dark:text-slate-200">第二步：上传文件</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                        选择填写好的 Excel 文件（.xlsx），点击导入按钮
+                      </p>
+                      <div className="mt-3">
+                        <label
+                          className={cn(
+                            'flex flex-col items-center justify-center w-full h-28 border-2 border-dashed rounded-xl cursor-pointer transition-colors',
+                            'border-gray-300 dark:border-slate-500 hover:border-primary-400 dark:hover:border-primary-400',
+                            'bg-white dark:bg-slate-800',
+                          )}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <FileSpreadsheet className={cn(
+                              'w-8 h-8',
+                              importFile ? 'text-emerald-500' : 'text-gray-400 dark:text-slate-500',
+                            )} />
+                            {importFile ? (
+                              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                {importFile.name}
+                              </span>
+                            ) : (
+                              <>
+                                <span className="text-sm text-gray-500 dark:text-slate-400">
+                                  点击选择文件或拖拽到此处
+                                </span>
+                                <span className="text-xs text-gray-400 dark:text-slate-500">
+                                  支持 .xlsx 格式
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <input
+                            type="file"
+                            accept=".xlsx"
+                            onChange={handleImportFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Import result */}
+                {importResult && (
+                  <div className="space-y-3">
+                    <div className={cn(
+                      'p-4 rounded-xl border',
+                      importResult.errors.length > 0
+                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                        : 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800',
+                    )}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          'w-10 h-10 rounded-full flex items-center justify-center',
+                          importResult.errors.length > 0
+                            ? 'bg-amber-100 dark:bg-amber-800/50 text-amber-600 dark:text-amber-400'
+                            : 'bg-emerald-100 dark:bg-emerald-800/50 text-emerald-600 dark:text-emerald-400',
+                        )}>
+                          {importResult.errors.length > 0
+                            ? <AlertCircle className="w-5 h-5" />
+                            : <FileSpreadsheet className="w-5 h-5" />
+                          }
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            导入完成
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                            成功导入 <span className="font-semibold text-emerald-600 dark:text-emerald-400">{importResult.imported}</span> 个用户，
+                            跳过 <span className="font-semibold text-amber-600 dark:text-amber-400">{importResult.skipped}</span> 个
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Error details */}
+                    {importResult.errors.length > 0 && (
+                      <div className="rounded-lg border border-red-200 dark:border-red-800 overflow-hidden">
+                        <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+                          <span className="text-xs font-semibold text-red-700 dark:text-red-400">
+                            异常详情（{importResult.errors.length} 条）
+                          </span>
+                        </div>
+                        <div className="max-h-36 overflow-y-auto divide-y divide-red-100 dark:divide-red-800/50">
+                          {importResult.errors.map((err, idx) => (
+                            <div key={idx} className="px-3 py-2 flex items-start gap-2 text-xs">
+                              <span className="text-red-400 dark:text-red-500 font-mono shrink-0">
+                                第{err.row}行
+                              </span>
+                              <span className="text-red-600 dark:text-red-400">
+                                {err.message}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 p-5 border-t border-gray-100 dark:border-slate-700">
+                <Button variant="outline" onClick={() => setShowImportModal(false)}>
+                  {importResult ? '关闭' : '取消'}
+                </Button>
+                {!importResult && (
+                  <Button onClick={handleImportSubmit} disabled={!importFile || importing}>
+                    {importing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                    {importing ? '导入中...' : '开始导入'}
+                  </Button>
+                )}
+                {importResult && (
+                  <Button onClick={() => { setShowImportModal(false); }}>
+                    完成
+                  </Button>
+                )}
               </div>
             </motion.div>
           </motion.div>

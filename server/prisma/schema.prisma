@@ -102,6 +102,12 @@ model WorkOrder {
   completedAt  DateTime? @map("completed_at")
   closedAt     DateTime? @map("closed_at")
 
+  // Confirm flow
+  completionRequestedAt DateTime? @map("completion_requested_at")
+  confirmedAt           DateTime? @map("confirmed_at")
+  confirmStatus         String?   @map("confirm_status") // PENDING_CONFIRM | CONFIRMED | REJECTED
+  rejectReason          String?   @map("reject_reason")
+
   // 评价
   rating   Int?
   feedback String?

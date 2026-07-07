@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import xlsx from 'xlsx';
+import multer from 'multer';
 import prisma from '../utils/prisma';
 import { success, fail, paginated } from '../utils/response';
 import { auth } from '../middleware/auth';
@@ -8,6 +10,9 @@ import { rbac } from '../middleware/rbac';
 import { AuthRequest } from '../types';
 
 const router = Router();
+
+// Multer for file uploads (in-memory storage)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // All user routes require authentication
 router.use(auth);
@@ -143,6 +148,137 @@ router.post('/', rbac('ADM'), async (req: AuthRequest, res: Response) => {
     fail(res, err.message);
   }
 });
+
+// GET /users/template - download Excel template (ADM only)
+router.get('/template', rbac('ADM'), (_req: AuthRequest, res: Response) => {
+  try {
+    const headers = [
+      'username', 'password', 'realName', 'role(STU/TCH/WRK)',
+      'department', 'phone', 'email', 'studentId', 'employeeId',
+    ];
+    const exampleRow = [
+      'zhangsan', '123456', '张三', 'STU',
+      '计算机学院', '13800138000', 'zhangsan@example.com', '2024001', '',
+    ];
+
+    const ws = xlsx.utils.aoa_to_sheet([headers, exampleRow]);
+
+    // Set reasonable column widths
+    ws['!cols'] = headers.map(() => ({ wch: 20 }));
+
+    const wb = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(wb, ws, '用户导入模板');
+
+    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=user_import_template.xlsx',
+    );
+    res.send(buf);
+  } catch (err: any) {
+    fail(res, err.message);
+  }
+});
+
+// POST /users/import - batch import from Excel (ADM only)
+router.post(
+  '/import',
+  rbac('ADM'),
+  upload.single('file'),
+  async (req: AuthRequest, res: Response) => {
+    try {
+      if (!req.file) {
+        return fail(res, '请上传Excel文件');
+      }
+
+      const wb = xlsx.read(req.file.buffer, { type: 'buffer' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows: any[] = xlsx.utils.sheet_to_json(ws, { defval: '' });
+
+      if (rows.length === 0) {
+        return fail(res, 'Excel文件中没有数据');
+      }
+
+      const validRoles = ['STU', 'TCH', 'WRK'];
+      const toImport: any[] = [];
+      const errors: { row: number; message: string }[] = [];
+      let skipped = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const rowNum = i + 2; // +2 because row 1 is header, and data starts at row 2
+
+        const username = String(row.username || '').trim();
+        const password = String(row.password || '').trim();
+        const realName = String(row.realName || '').trim();
+        const role = String(row.role || '').trim().toUpperCase();
+
+        // Validate required fields
+        if (!username) {
+          errors.push({ row: rowNum, message: '用户名不能为空' });
+          continue;
+        }
+        if (!password) {
+          errors.push({ row: rowNum, message: '密码不能为空' });
+          continue;
+        }
+        if (!realName) {
+          errors.push({ row: rowNum, message: '姓名不能为空' });
+          continue;
+        }
+        if (!role || !validRoles.includes(role)) {
+          errors.push({
+            row: rowNum,
+            message: `角色无效: "${role}", 有效值: STU/TCH/WRK`,
+          });
+          continue;
+        }
+
+        // Check if username already exists
+        const exists = await prisma.user.findUnique({ where: { username } });
+        if (exists) {
+          errors.push({
+            row: rowNum,
+            message: `用户名 "${username}" 已存在，已跳过`,
+          });
+          skipped++;
+          continue;
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        toImport.push({
+          username,
+          password: hashed,
+          realName,
+          role,
+          department: String(row.department || '').trim() || null,
+          phone: String(row.phone || '').trim() || null,
+          email: String(row.email || '').trim() || null,
+          studentId: String(row.studentId || '').trim() || null,
+          employeeId: String(row.employeeId || '').trim() || null,
+        });
+      }
+
+      if (toImport.length > 0) {
+        await prisma.user.createMany({ data: toImport });
+      }
+
+      success(res, {
+        imported: toImport.length,
+        skipped,
+        errors,
+      }, `成功导入 ${toImport.length} 个用户，跳过 ${skipped} 个`);
+    } catch (err: any) {
+      fail(res, err.message);
+    }
+  },
+);
 
 // PUT /users/:id (ADM only)
 router.put('/:id', rbac('ADM'), async (req: AuthRequest, res: Response) => {
