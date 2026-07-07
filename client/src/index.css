@@ -130,7 +130,7 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    /* Multi-layer wave gradients */
+    /* Multi-layer wave gradients — reduced opacity on mobile */
     background:
       /* Layer 1: Deep blue wave blob — drifts slowly right */
       radial-gradient(ellipse 1400px 700px at 15% 85%,
@@ -149,6 +149,22 @@
     background-size: 220% 220%, 200% 200%, 180% 180%, 200% 200%, 100% 100%;
     animation: seawater-flow 28s ease-in-out infinite;
     will-change: background-position;
+  }
+
+  /* Mobile: further reduce seawater opacity for readability */
+  @media (max-width: 767px) {
+    body::before {
+      background:
+        radial-gradient(ellipse 1400px 700px at 15% 85%,
+          rgba(37, 99, 235, 0.03) 0%, transparent 55%),
+        radial-gradient(ellipse 1100px 550px at 80% 15%,
+          rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+        radial-gradient(ellipse 900px 450px at 55% 55%,
+          rgba(124, 58, 237, 0.015) 0%, transparent 45%),
+        radial-gradient(ellipse 1000px 500px at 30% 40%,
+          rgba(5, 150, 105, 0.015) 0%, transparent 50%),
+        linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F0F5FF 100%);
+    }
   }
 
   /* Dark mode seawater */
