@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import MainLayout from '@/layouts/MainLayout';
 import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
+import AdminDashboard from '@/pages/AdminDashboard';
 import OrderList from '@/pages/OrderList';
 import OrderDetail from '@/pages/OrderDetail';
 import SubmitOrder from '@/pages/SubmitOrder';
@@ -38,6 +39,7 @@ export default function App() {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute roles={['ADM']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/orders/my" element={<ProtectedRoute roles={['STU']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/dept" element={<ProtectedRoute roles={['TCH']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/pending" element={<ProtectedRoute roles={['WRK']}><OrderList /></ProtectedRoute>} />

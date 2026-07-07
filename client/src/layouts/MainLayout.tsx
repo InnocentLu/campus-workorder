@@ -27,6 +27,7 @@ const allMenus: MenuItem[] = [
   { label: '我的任务', icon: Wrench, path: '/orders/tasks', roles: ['WRK'] },
   { label: '工单管理', icon: ClipboardList, path: '/orders/manage', roles: ['ADM'] },
   { label: '用户管理', icon: Users, path: '/users', roles: ['ADM'] },
+  { label: '数据仪表盘', icon: BarChart3, path: '/admin/dashboard', roles: ['ADM'] },
   { label: '个人中心', icon: User, path: '/profile', roles: ['STU', 'TCH', 'WRK', 'ADM'] },
 ];
 

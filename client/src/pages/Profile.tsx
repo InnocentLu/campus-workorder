@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuthStore } from '@/store/authStore';
 import client from '@/api/client';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import {
   getRoleLabel,
   getRoleBadgeClass,
@@ -38,6 +39,8 @@ import {
   Settings,
   AlertCircle,
   ChevronRight,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -104,6 +107,8 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [pwdSaving, setPwdSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showOldPwd, setShowOldPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
 
   /* ── Stats state ── */
   const [stats, setStats] = useState<UserStats>({
@@ -210,8 +215,11 @@ export default function Profile() {
     try {
       await client.put('/users/me/password', pwdForm);
       setPwdForm({ oldPassword: '', newPassword: '' });
+      setShowOldPwd(false);
+      setShowNewPwd(false);
+      toast.success('密码修改成功');
     } catch {
-      // silent
+      toast.error('密码修改失败，请重试');
     } finally {
       setPwdSaving(false);
     }
@@ -221,28 +229,28 @@ export default function Profile() {
   const statCards = useMemo(() => {
     const cards = [
       {
-        label: '待处理',
-        value: stats.pending,
-        icon: AlertCircle,
-        color: '#F59E0B',
-        bg: 'bg-amber-50',
-        iconBg: 'bg-amber-100',
+        label: '我的工单',
+        value: stats.total,
+        icon: ClipboardList,
+        color: '#2563EB',
+        bg: 'bg-blue-50 dark:bg-blue-900/20',
+        iconBg: 'bg-blue-100 dark:bg-blue-800/30',
       },
       {
-        label: '处理中',
-        value: stats.processing,
+        label: '待处理',
+        value: stats.pending,
         icon: Clock,
-        color: '#7C3AED',
-        bg: 'bg-purple-50',
-        iconBg: 'bg-purple-100',
+        color: '#F59E0B',
+        bg: 'bg-amber-50 dark:bg-amber-900/20',
+        iconBg: 'bg-amber-100 dark:bg-amber-800/30',
       },
       {
         label: '已完成',
         value: stats.completed,
         icon: CheckCircle,
         color: '#10B981',
-        bg: 'bg-emerald-50',
-        iconBg: 'bg-emerald-100',
+        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+        iconBg: 'bg-emerald-100 dark:bg-emerald-800/30',
       },
       {
         label: '好评率',
@@ -250,21 +258,21 @@ export default function Profile() {
         suffix: '%',
         icon: Star,
         color: '#EF4444',
-        bg: 'bg-rose-50',
-        iconBg: 'bg-rose-100',
+        bg: 'bg-rose-50 dark:bg-rose-900/20',
+        iconBg: 'bg-rose-100 dark:bg-rose-800/30',
         format: 'rating',
       },
     ];
 
     // TCH: add pending assignments
     if (user?.role === 'TCH') {
-      cards.splice(1, 0, {
+      cards.splice(2, 0, {
         label: '待审批',
         value: stats.pendingAssignments || 0,
         icon: FileText,
-        color: '#2563EB',
-        bg: 'bg-blue-50',
-        iconBg: 'bg-blue-100',
+        color: '#7C3AED',
+        bg: 'bg-purple-50 dark:bg-purple-900/20',
+        iconBg: 'bg-purple-100 dark:bg-purple-800/30',
       });
     }
 
@@ -276,84 +284,231 @@ export default function Profile() {
   return (
     <div className="flex flex-col lg:flex-row gap-6">
       {/* ═══════════════════════════════════════════
-          LEFT — Profile & Password
+          LEFT — Profile, Stats, Account, Password
           ═══════════════════════════════════════════ */}
       <div className="w-full lg:w-[42%] space-y-6 flex-shrink-0">
+        {/* ── Avatar Section ── */}
         <ScrollReveal>
-          <GlassCard className="p-6 sm:p-8">
-            {/* Avatar */}
-            <div className="flex items-center gap-5 pb-6 mb-6 border-b border-gray-100">
-              <motion.div
-                className="w-20 h-20 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-primary-500/25"
-                whileHover={{ scale: 1.05, rotate: -5 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-              >
-                {user?.realName?.[0] || 'U'}
-              </motion.div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-900">{user?.realName}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className={cn(
-                      'px-2 py-0.5 rounded-full text-xs font-medium',
-                      getRoleBadgeClass(role || ''),
-                    )}
-                  >
-                    {getRoleLabel(role || '')}
+          <GlassCard className="p-6 sm:p-8 text-center">
+            {/* Circular avatar with gradient ring */}
+            <div className="inline-block mb-4">
+              <div className="p-[3px] rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600">
+                <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-gray-700 dark:text-gray-200 select-none">
+                    {user?.realName?.[0] || 'U'}
                   </span>
-                  <span className="text-sm text-gray-400">@{user?.username}</span>
                 </div>
               </div>
             </div>
 
-            {/* Fields */}
+            {/* Change avatar button */}
+            <button
+              type="button"
+              onClick={() => toast.info('功能开发中')}
+              className="block mx-auto mb-4 text-xs text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline underline-offset-2"
+              aria-label="更换头像"
+            >
+              更换头像
+            </button>
+
+            {/* User name */}
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              {user?.realName || '未设置姓名'}
+            </h3>
+
+            {/* Role badge + username */}
+            <div className="flex items-center justify-center gap-2">
+              <span
+                className={cn(
+                  'px-2.5 py-0.5 rounded-full text-xs font-medium',
+                  getRoleBadgeClass(role || ''),
+                )}
+              >
+                {getRoleLabel(role || '')}
+              </span>
+              <span className="text-sm text-gray-400 dark:text-gray-500">
+                @{user?.username || 'user'}
+              </span>
+            </div>
+          </GlassCard>
+        </ScrollReveal>
+
+        {/* ── Stats Mini-Cards (2x2 grid) ── */}
+        <div className="grid grid-cols-2 gap-3">
+          {statCards.map((card) => (
+            <ScrollReveal key={card.label}>
+              <GlassCard className="p-4 sm:p-5">
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1.5 truncate">
+                      {card.label}
+                    </p>
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
+                        {card.format === 'rating' ? (
+                          stats.ratedCount === 0 ? (
+                            '--'
+                          ) : (
+                            <AnimatedCounter from={0} to={card.value as number} />
+                          )
+                        ) : (
+                          <AnimatedCounter from={0} to={card.value as number} />
+                        )}
+                      </span>
+                      {card.suffix && (
+                        <span className="text-sm text-gray-400 dark:text-gray-500 font-medium">
+                          {card.suffix}
+                        </span>
+                      )}
+                    </div>
+                    {card.format === 'rating' && stats.ratedCount > 0 && (
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+                        共 {stats.ratedCount} 条评价
+                      </p>
+                    )}
+                  </div>
+                  <div
+                    className={cn(
+                      'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                      card.iconBg,
+                    )}
+                  >
+                    <card.icon className="w-4.5 h-4.5" style={{ color: card.color }} />
+                  </div>
+                </div>
+              </GlassCard>
+            </ScrollReveal>
+          ))}
+        </div>
+
+        {/* ── Account Info Form ── */}
+        <ScrollReveal>
+          <GlassCard className="p-6 sm:p-8">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">账户信息</h3>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-              <InputField icon={User} label="姓名" value={form.realName} onChange={(v) => setForm({ ...form, realName: v })} />
-              <InputField icon={Phone} label="电话" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
-              <InputField icon={Mail} label="邮箱" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-              <InputField icon={Building} label="部门" value={form.department} onChange={(v) => setForm({ ...form, department: v })} />
+              <InputField
+                icon={User}
+                label="姓名"
+                value={form.realName}
+                onChange={(v) => setForm({ ...form, realName: v })}
+              />
+              <InputField
+                icon={Phone}
+                label="电话"
+                value={form.phone}
+                onChange={(v) => setForm({ ...form, phone: v })}
+              />
+              <InputField
+                icon={Mail}
+                label="邮箱"
+                value={form.email}
+                onChange={(v) => setForm({ ...form, email: v })}
+              />
+              <InputField
+                icon={Building}
+                label="部门"
+                value={form.department}
+                onChange={(v) => setForm({ ...form, department: v })}
+              />
             </div>
 
             <FlowingButton
               onClick={handleUpdateProfile}
               loading={saving}
-              className={saved ? '!bg-emerald-500 !from-emerald-500 !to-emerald-600' : ''}
+              className={
+                saved
+                  ? '!bg-emerald-500 !from-emerald-500 !to-emerald-600 !border-emerald-500 w-full sm:w-auto'
+                  : 'w-full sm:w-auto'
+              }
             >
               {saved ? '✓ 已保存' : '保存修改'}
             </FlowingButton>
           </GlassCard>
         </ScrollReveal>
 
+        {/* ── Password Change ── */}
         <ScrollReveal>
           <GlassCard className="p-6 sm:p-8">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Lock className="w-4 h-4 text-orange-600" />
+              <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                <Lock className="w-4 h-4 text-orange-600 dark:text-orange-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">修改密码</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">修改密码</h3>
             </div>
+
             <div className="space-y-4">
-              <InputField
-                icon={Shield}
-                label="原密码"
-                value={pwdForm.oldPassword}
-                onChange={(v) => setPwdForm({ ...pwdForm, oldPassword: v })}
-                type="password"
-                placeholder="输入原密码"
-              />
-              <InputField
-                icon={Lock}
-                label="新密码"
-                value={pwdForm.newPassword}
-                onChange={(v) => setPwdForm({ ...pwdForm, newPassword: v })}
-                type="password"
-                placeholder="输入新密码"
-              />
+              {/* Old password */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  原密码
+                </label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type={showOldPwd ? 'text' : 'password'}
+                    value={pwdForm.oldPassword}
+                    onChange={(e) => setPwdForm({ ...pwdForm, oldPassword: e.target.value })}
+                    placeholder="输入原密码"
+                    className="w-full h-11 pl-10 pr-12 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                    aria-label="原密码"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPwd(!showOldPwd)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    aria-label={showOldPwd ? '隐藏原密码' : '显示原密码'}
+                  >
+                    {showOldPwd ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* New password */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                  新密码
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                  <input
+                    type={showNewPwd ? 'text' : 'password'}
+                    value={pwdForm.newPassword}
+                    onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })}
+                    placeholder="输入新密码"
+                    className="w-full h-11 pl-10 pr-12 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
+                    aria-label="新密码"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPwd(!showNewPwd)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    aria-label={showNewPwd ? '隐藏新密码' : '显示新密码'}
+                  >
+                    {showNewPwd ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <FlowingButton
                 variant="outline"
                 onClick={handleChangePwd}
                 loading={pwdSaving}
                 disabled={!pwdForm.oldPassword || !pwdForm.newPassword}
+                className="w-full sm:w-auto"
               >
                 修改密码
               </FlowingButton>
@@ -363,7 +518,7 @@ export default function Profile() {
       </div>
 
       {/* ═══════════════════════════════════════════
-          RIGHT — Data Dashboard
+          RIGHT — Alert, Trend, Orders, Actions
           ═══════════════════════════════════════════ */}
       <motion.div
         className="w-full lg:w-[58%] space-y-5"
@@ -375,81 +530,44 @@ export default function Profile() {
         {role === 'WRK' && !statsLoading && (
           <motion.div
             variants={rightItem}
-            className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200"
+            className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/50"
           >
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-amber-600" />
+            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-800/30 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-amber-800">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
                 今日待接单：{stats.todayPendingOrders} 件
               </p>
-              <p className="text-xs text-amber-600">请及时处理待接单工单</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                请及时处理待接单工单
+              </p>
             </div>
             <Link
               to="/orders/pending"
-              className="ml-auto text-sm text-amber-700 font-medium hover:text-amber-900 transition-colors flex items-center gap-1 flex-shrink-0"
+              className="ml-auto text-sm text-amber-700 dark:text-amber-300 font-medium hover:text-amber-900 dark:hover:text-amber-100 transition-colors flex items-center gap-1 flex-shrink-0"
             >
               去接单 <ChevronRight className="w-4 h-4" />
             </Link>
           </motion.div>
         )}
 
-        {/* ── Stat Cards (2x2 grid) ── */}
-        <motion.div
-          variants={rightItem}
-          className="grid grid-cols-2 gap-3 sm:gap-4"
-        >
-          {statCards.map((card) => (
-            <GlassCard key={card.label} className="p-4 sm:p-5">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium mb-1.5">
-                    {card.label}
-                  </p>
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-2xl sm:text-3xl font-bold text-gray-900">
-                      {card.format === 'rating' ? (
-                        stats.ratedCount === 0 ? (
-                          '--'
-                        ) : (
-                          <AnimatedCounter from={0} to={card.value as number} />
-                        )
-                      ) : (
-                        <AnimatedCounter from={0} to={card.value as number} />
-                      )}
-                    </span>
-                    {card.suffix && (
-                      <span className="text-sm text-gray-400 font-medium">
-                        {card.suffix}
-                      </span>
-                    )}
-                  </div>
-                  {card.format === 'rating' && stats.ratedCount > 0 && (
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      共 {stats.ratedCount} 条评价
-                    </p>
-                  )}
-                </div>
-                <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', card.iconBg)}>
-                  <card.icon className="w-4.5 h-4.5" style={{ color: card.color }} />
-                </div>
-              </div>
-            </GlassCard>
-          ))}
-        </motion.div>
-
         {/* ── Mini Trend Chart ── */}
         <motion.div variants={rightItem}>
           <GlassCard className="p-5">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="w-4 h-4 text-gray-400" />
-              <h4 className="text-sm font-semibold text-gray-700">近7天工单趋势</h4>
+              <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                近7天工单趋势
+              </h4>
             </div>
             {stats.trendData.length > 0 ? (
               <div className="h-[120px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.trendData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <AreaChart
+                    data={stats.trendData}
+                    margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                  >
                     <defs>
                       <linearGradient id="profileTrend" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#2563EB" stopOpacity={0.25} />
@@ -475,6 +593,7 @@ export default function Profile() {
                         border: '1px solid rgba(0,0,0,0.06)',
                         boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                         fontSize: '12px',
+                        backgroundColor: 'var(--tooltip-bg, #fff)',
                       }}
                     />
                     <Area
@@ -490,24 +609,32 @@ export default function Profile() {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="h-[120px] flex items-center justify-center text-sm text-gray-400">
+              <div className="h-[120px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 {statsLoading ? '加载中...' : '暂无工单数据'}
               </div>
             )}
           </GlassCard>
         </motion.div>
 
-        {/* ── Latest Orders ── */}
+        {/* ── Recent Orders (last 3) ── */}
         <motion.div variants={rightItem}>
           <GlassCard className="p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-gray-400" />
-                <h4 className="text-sm font-semibold text-gray-700">最新工单动态</h4>
+                <ClipboardList className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  最新工单动态
+                </h4>
               </div>
               <Link
-                to={role === 'WRK' ? '/orders/tasks' : role === 'ADM' ? '/orders/manage' : '/orders/my'}
-                className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                to={
+                  role === 'WRK'
+                    ? '/orders/tasks'
+                    : role === 'ADM'
+                    ? '/orders/manage'
+                    : '/orders/my'
+                }
+                className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
               >
                 查看全部
               </Link>
@@ -515,11 +642,11 @@ export default function Profile() {
 
             {stats.recentOrders.length > 0 ? (
               <div className="space-y-1">
-                {stats.recentOrders.map((order) => (
+                {stats.recentOrders.slice(0, 3).map((order) => (
                   <Link
                     key={order.id}
                     to={`/orders/${order.id}`}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 transition-colors group"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors group"
                   >
                     {/* Status dot */}
                     <span
@@ -539,7 +666,7 @@ export default function Profile() {
                             : '#EF4444',
                       }}
                     />
-                    <span className="flex-1 text-sm text-gray-700 truncate group-hover:text-gray-900 transition-colors">
+                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-300 truncate group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors">
                       {order.title}
                     </span>
                     <span
@@ -550,14 +677,14 @@ export default function Profile() {
                     >
                       {getStatusLabel(order.status)}
                     </span>
-                    <span className="text-xs text-gray-400 flex-shrink-0 w-16 text-right">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0 w-16 text-right">
                       {formatRelativeTime(order.updatedAt)}
                     </span>
                   </Link>
                 ))}
               </div>
             ) : (
-              <div className="py-10 text-center text-sm text-gray-400">
+              <div className="py-10 text-center text-sm text-gray-400 dark:text-gray-500">
                 {statsLoading ? '加载中...' : '暂无工单记录'}
               </div>
             )}
@@ -585,15 +712,16 @@ export default function Profile() {
                 )
               }
               variant="outline"
-              className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
+              className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-300"
             >
               <FileText className="w-4 h-4 mr-2" />
-              查看全部工单
+              我的工单
             </Button>
             {(role === 'TCH' || role === 'WRK' || role === 'ADM') && (
               <Button
+                onClick={() => toast.info('功能开发中')}
                 variant="outline"
-                className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
+                className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-300"
               >
                 <BarChart3 className="w-4 h-4 mr-2" />
                 数据报告
@@ -603,7 +731,7 @@ export default function Profile() {
               <Button
                 onClick={() => navigate('/users')}
                 variant="outline"
-                className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300"
+                className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-300"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 系统管理
@@ -634,15 +762,17 @@ function InputField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        {label}
+      </label>
       <div className="relative">
-        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 transition-colors" />
         <input
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder || label}
-          className="w-full h-11 pl-10 pr-4 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-300 transition-all"
+          className="w-full h-11 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 dark:focus:border-blue-400 transition-all"
         />
       </div>
     </div>
