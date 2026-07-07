@@ -53,31 +53,53 @@ export default function TradeManagement() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ name: '', code: '', description: '' });
 
-  /* ── Fetch ── */
+  /* ── Fetch trades + compute worker counts from real user data ── */
   const fetchTrades = async () => {
     setLoading(true);
     try {
-      const params: any = {};
-      if (keyword) params.keyword = keyword;
-      if (statusFilter !== 'ALL') params.status = statusFilter;
-      const res = await client.get('/trades', { params });
-      if (res.data.code === 200) {
-        setTrades(res.data.data.list || res.data.data || []);
-        setTotal(res.data.data.total || 0);
-      }
-    } catch {
-      // TODO: Replace with real API - using defaults as fallback
-      let filtered = DEFAULT_TRADES.map((t, i) => ({
+      // Fetch all WRK users to compute real trade counts
+      const usersRes = await client.get('/users', { params: { role: 'WRK', pageSize: 500 } });
+      const workers: any[] = usersRes.data?.code === 200
+        ? (usersRes.data.data?.list || usersRes.data.data || [])
+        : [];
+
+      // Count workers per trade
+      const tradeCounts: Record<string, number> = {};
+      const tradeStatuses: Record<string, string> = {};
+      workers.forEach((w: any) => {
+        if (w.trade) {
+          tradeCounts[w.trade] = (tradeCounts[w.trade] || 0) + 1;
+        }
+      });
+
+      // Build trade list from defaults + real counts
+      let tradesList: Trade[] = DEFAULT_TRADES.map((t, i) => ({
         ...t,
         id: i + 1,
-        workerCount: Math.floor(Math.random() * 5),
+        workerCount: tradeCounts[t.name] || 0,
+        status: (tradeStatuses[t.name] as 'ACTIVE' | 'DISABLED') || 'ACTIVE',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }));
-      if (keyword) filtered = filtered.filter((t) => t.name.includes(keyword) || t.code.includes(keyword));
-      if (statusFilter !== 'ALL') filtered = filtered.filter((t) => t.status === statusFilter);
-      setTrades(filtered);
-      setTotal(filtered.length);
+
+      // Apply filters
+      if (keyword) tradesList = tradesList.filter((t) => t.name.includes(keyword) || t.code.includes(keyword));
+      if (statusFilter !== 'ALL') tradesList = tradesList.filter((t) => t.status === statusFilter);
+
+      setTrades(tradesList);
+      setTotal(tradesList.length);
+    } catch {
+      // Fallback with zero counts
+      let tradesList = DEFAULT_TRADES.map((t, i) => ({
+        ...t,
+        id: i + 1,
+        workerCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+      if (keyword) tradesList = tradesList.filter((t) => t.name.includes(keyword) || t.code.includes(keyword));
+      setTrades(tradesList);
+      setTotal(tradesList.length);
     } finally {
       setLoading(false);
     }
@@ -103,51 +125,56 @@ export default function TradeManagement() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await client.put(`/trades/${editing.id}`, form);
-        if (res.data.code === 200) {
-          toast.success('工种更新成功');
-          setShowModal(false);
-          fetchTrades();
-        }
+        // Update trade in local state (backend trades table not yet implemented)
+        setTrades((prev) =>
+          prev.map((t) =>
+            t.id === editing.id ? { ...t, name: form.name, code: form.code, description: form.description, updatedAt: new Date().toISOString() } : t,
+          ),
+        );
+        toast.success('工种更新成功');
       } else {
-        const res = await client.post('/trades', form);
-        if (res.data.code === 200) {
-          toast.success('工种创建成功');
-          setShowModal(false);
-          fetchTrades();
-        }
+        // Add new trade to local state
+        const newTrade: Trade = {
+          id: Math.max(0, ...trades.map((t) => t.id)) + 1,
+          name: form.name,
+          code: form.code,
+          description: form.description,
+          status: 'ACTIVE',
+          workerCount: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        setTrades((prev) => [...prev, newTrade]);
+        setTotal((prev) => prev + 1);
+        toast.success('工种创建成功');
       }
+      setShowModal(false);
     } catch {
-      toast.error(editing ? '更新失败，请重试' : '创建失败，请重试');
+      toast.error(editing ? '更新失败' : '创建失败');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (trade: Trade) => {
-    if (!confirm(`确认删除工种「${trade.name}」？此操作不可撤销。`)) return;
-    try {
-      const res = await client.delete(`/trades/${trade.id}`);
-      if (res.data.code === 200) {
-        toast.success('工种已删除');
-        fetchTrades();
-      }
-    } catch {
-      toast.error('删除失败');
+    if (trade.workerCount && trade.workerCount > 0) {
+      toast.error(`「${trade.name}」下还有 ${trade.workerCount} 名维修工，请先解绑后再删除`);
+      return;
     }
+    if (!confirm(`确认删除工种「${trade.name}」？此操作不可撤销。`)) return;
+    setTrades((prev) => prev.filter((t) => t.id !== trade.id));
+    setTotal((prev) => prev - 1);
+    toast.success('工种已删除');
   };
 
   const handleToggle = async (trade: Trade) => {
     const newStatus = trade.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE';
-    try {
-      const res = await client.put(`/trades/${trade.id}`, { status: newStatus });
-      if (res.data.code === 200) {
-        toast.success(newStatus === 'ACTIVE' ? '工种已启用' : '工种已禁用');
-        fetchTrades();
-      }
-    } catch {
-      toast.error('操作失败');
-    }
+    setTrades((prev) =>
+      prev.map((t) =>
+        t.id === trade.id ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t,
+      ),
+    );
+    toast.success(newStatus === 'ACTIVE' ? `「${trade.name}」已启用` : `「${trade.name}」已禁用`);
   };
 
   /* ── Filtered ── */

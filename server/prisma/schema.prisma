@@ -27,6 +27,7 @@ model User {
   studentId  String?  @map("student_id") @db.VarChar(50)
   employeeId String?  @map("employee_id") @db.VarChar(50)
   avatar     String?  @db.VarChar(255)
+  trade      String?  @db.VarChar(50) // 工种：水电维修/门窗修缮/网络故障/空调检修/墙面修补/家具维修
   status     String   @default("ACTIVE") @db.VarChar(20) // ACTIVE | DISABLED
 
   // 提交的工单

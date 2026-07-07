@@ -123,6 +123,7 @@ router.post('/', rbac('ADM'), async (req: AuthRequest, res: Response) => {
       department: z.string().optional(),
       studentId: z.string().optional(),
       employeeId: z.string().optional(),
+      trade: z.string().optional(),
     });
     const body = schema.parse(req.body);
 
@@ -154,6 +155,7 @@ router.put('/:id', rbac('ADM'), async (req: AuthRequest, res: Response) => {
       department: z.string().optional(),
       studentId: z.string().optional(),
       employeeId: z.string().optional(),
+      trade: z.string().optional(),
       status: z.enum(['ACTIVE', 'DISABLED']).optional(),
     });
     const body = schema.parse(req.body);
