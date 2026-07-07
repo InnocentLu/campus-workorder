@@ -19,6 +19,9 @@ import {
   Building2,
   Phone,
   UserCheck,
+  TrendingUp,
+  Star,
+  Zap,
 } from 'lucide-react';
 
 /* ── Animation variants ── */
@@ -70,9 +73,9 @@ const tabSlide = {
 
 /* ── Floating badge data ── */
 const floatingBadges = [
-  { icon: '📊', label: '今日工单', value: '24 件', delay: 0, x: '-8%', y: '18%' },
-  { icon: '⭐', label: '满意度', value: '98.6%', delay: 1.5, x: '72%', y: '62%' },
-  { icon: '⚡', label: '平均响应', value: '2.5min', delay: 3, x: '58%', y: '22%' },
+  { icon: TrendingUp, label: '今日工单', value: '24 件', delay: 0, x: '-8%', y: '18%', color: '#3B82F6' },
+  { icon: Star, label: '满意度', value: '98.6%', delay: 1.5, x: '72%', y: '62%', color: '#F59E0B' },
+  { icon: Zap, label: '平均响应', value: '2.5min', delay: 3, x: '58%', y: '22%', color: '#10B981' },
 ];
 
 /* ── Types ── */
@@ -314,7 +317,7 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    tabIndex={-1}
+                    aria-label={showPassword ? '隐藏密码' : '显示密码'}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -468,7 +471,7 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowRegPwd(!showRegPwd)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    tabIndex={-1}
+                    aria-label={showRegPwd ? '隐藏密码' : '显示密码'}
                   >
                     {showRegPwd ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -489,7 +492,7 @@ export default function Login() {
                     type="button"
                     onClick={() => setShowRegConfirm(!showRegConfirm)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    tabIndex={-1}
+                    aria-label={showRegConfirm ? '隐藏确认密码' : '显示确认密码'}
                   >
                     {showRegConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -666,23 +669,27 @@ export default function Login() {
         </div>
 
         {/* ── Floating glass badges ── */}
-        {floatingBadges.map((badge, i) => (
-          <motion.div
-            key={i}
-            className="absolute z-20 px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl shadow-black/10"
-            style={{ left: badge.x, top: badge.y }}
-            animate={{ y: [-12, 10, -12] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: badge.delay }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{badge.icon}</span>
-              <div>
-                <p className="text-white/50 text-[10px] font-medium tracking-wide">{badge.label}</p>
-                <p className="text-white text-lg font-bold tracking-tight">{badge.value}</p>
+        {floatingBadges.map((badge, i) => {
+          const BadgeIcon = badge.icon;
+          return (
+            <motion.div
+              key={i}
+              className="absolute z-20 px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl shadow-black/10"
+              style={{ left: badge.x, top: badge.y }}
+              animate={{ y: [-12, 10, -12] }}
+              transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: badge.delay }}
+              aria-hidden="true"
+            >
+              <div className="flex items-center gap-3">
+                <BadgeIcon className="w-5 h-5" style={{ color: badge.color }} />
+                <div>
+                  <p className="text-white/50 text-[10px] font-medium tracking-wide">{badge.label}</p>
+                  <p className="text-white text-lg font-bold tracking-tight">{badge.value}</p>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
 
         {/* ── Bottom brand tagline ── */}
         <div className="absolute bottom-10 left-0 right-0 text-center z-10">

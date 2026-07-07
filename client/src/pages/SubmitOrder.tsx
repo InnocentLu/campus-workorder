@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import client from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { ScrollReveal, FlowingButton } from '@/components/animations';
@@ -56,7 +57,7 @@ export default function SubmitOrder() {
         setTimeout(() => navigate(`/orders/${res.data.data.id}`), 1500);
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || '提交失败');
+      toast.error(err.response?.data?.message || '提交失败，请稍后重试');
     } finally {
       setSubmitting(false);
     }

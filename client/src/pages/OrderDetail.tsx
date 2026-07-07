@@ -49,18 +49,19 @@ export default function OrderDetail() {
   // Loading state
   if (!order) {
     return (
-      <div className="space-y-6 max-w-4xl">
-        <div className="h-48 bg-gray-200 rounded-2xl animate-shimmer bg-[length:200%_100%]" />
+      <div className="space-y-6 max-w-4xl" aria-label="加载中" role="status">
+        <div className="h-48 skeleton rounded-2xl" />
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="w-10 h-10 rounded-full bg-gray-200 animate-shimmer bg-[length:200%_100%]" />
+            <div key={i} className="w-10 h-10 rounded-full skeleton" />
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2].map((i) => (
-            <div key={i} className="h-40 bg-gray-100 rounded-2xl animate-shimmer bg-[length:200%_100%]" />
+            <div key={i} className="h-40 skeleton rounded-2xl" />
           ))}
         </div>
+        <span className="sr-only">正在加载工单详情...</span>
       </div>
     );
   }
@@ -121,7 +122,7 @@ export default function OrderDetail() {
       </motion.div>
 
       {/* === HORIZONTAL STEPPER (sticky) === */}
-      <div className="sticky top-16 z-20 -mx-2 px-2 py-4 bg-white/80 backdrop-blur-xl border-b border-gray-100 mb-6">
+      <div className="sticky top-16 z-20 -mx-2 px-2 py-4 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-blue-100/60 dark:border-slate-700/60 mb-6" role="navigation" aria-label="工单进度">
         <div className="flex items-start gap-0 overflow-x-auto scrollbar-thin pb-1">
           {steps.map((step, i) => (
             <div key={i} className="flex items-center flex-1 min-w-[72px]">
@@ -131,21 +132,22 @@ export default function OrderDetail() {
                   animate={{ scale: 1 }}
                   transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 300, damping: 20 }}
                   className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center text-sm',
+                    'w-10 h-10 rounded-full flex items-center justify-center text-sm transition-colors duration-300',
                     step.time
-                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/25'
-                      : 'bg-gray-100 text-gray-400',
+                      ? 'bg-primary-600 text-white shadow-md shadow-primary-500/25'
+                      : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-slate-500',
                   )}
+                  aria-current={i === currentStepIndex - 1 ? 'step' : undefined}
                 >
-                  {step.time ? <CheckCircle2 className="w-5 h-5" /> : i + 1}
+                  {step.time ? <CheckCircle2 className="w-5 h-5" /> : <span aria-hidden="true">{i + 1}</span>}
                 </motion.div>
-                <p className="text-xs mt-1.5 font-medium text-gray-700">{step.label}</p>
-                {step.time && <p className="text-[10px] text-gray-400 mt-0.5 whitespace-nowrap">{formatDate(step.time)}</p>}
+                <p className={cn('text-xs mt-1.5 font-medium', step.time ? 'text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-slate-500')}>{step.label}</p>
+                {step.time && <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5 whitespace-nowrap">{formatDate(step.time)}</p>}
               </div>
               {i < steps.length - 1 && (
                 <div className={cn(
-                  'flex-1 h-0.5 mx-1 mt-5',
-                  steps[i + 1].time ? 'bg-primary-500' : 'bg-gray-200',
+                  'flex-1 h-0.5 mx-1 mt-5 transition-colors duration-300',
+                  steps[i + 1].time ? 'bg-primary-500' : 'bg-gray-200 dark:bg-slate-600',
                 )} />
               )}
             </div>
@@ -157,12 +159,12 @@ export default function OrderDetail() {
       <div className="space-y-4">
         {/* Basic Info */}
         <ScrollReveal>
-          <div className="glass-strong rounded-2xl p-6">
+          <div className="glass-strong rounded-2xl p-6 dark:bg-slate-800/88 dark:border-slate-700/30">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-4 h-4 text-blue-600" />
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">基本信息</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">基本信息</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <InfoRow icon={User} label="提交人" value={`${order.submitter?.realName} (${getRoleLabel(order.submitter?.role)})`} />
@@ -178,36 +180,36 @@ export default function OrderDetail() {
 
         {/* Description */}
         <ScrollReveal>
-          <div className="glass-strong rounded-2xl p-6">
+          <div className="glass-strong rounded-2xl p-6 dark:bg-slate-800/88 dark:border-slate-700/30">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-4 h-4 text-purple-600" />
+              <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="font-semibold text-gray-900">工单描述</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">工单描述</h3>
             </div>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{order.description || '无描述'}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{order.description || '无描述'}</p>
           </div>
         </ScrollReveal>
 
         {/* Repair Records */}
         {order.repairRecords?.length > 0 && (
           <ScrollReveal>
-            <div className="glass-strong rounded-2xl p-6">
+            <div className="glass-strong rounded-2xl p-6 dark:bg-slate-800/88 dark:border-slate-700/30">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                  <Wrench className="w-4 h-4 text-emerald-600" />
+                <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                  <Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900">维修记录</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">维修记录</h3>
               </div>
               <div className="space-y-3">
                 {order.repairRecords.map((r: any, i: number) => (
-                  <div key={r.id} className="p-4 bg-gray-50/80 rounded-xl border border-gray-100">
-                    <p className="text-sm text-gray-700">{r.content}</p>
-                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-                      {r.cost > 0 && <span>💰 费用：¥{Number(r.cost).toFixed(2)}</span>}
-                      {r.usedParts && <span>🔧 配件：{r.usedParts}</span>}
-                      {r.handler?.realName && <span>👤 处理人：{r.handler.realName}</span>}
-                      <span>🕐 {formatDate(r.createdAt)}</span>
+                  <div key={r.id} className="p-4 bg-gray-50/80 dark:bg-slate-700/40 rounded-xl border border-gray-100 dark:border-slate-600/50">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{r.content}</p>
+                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500 dark:text-slate-400">
+                      {r.cost > 0 && <span>费用：¥{Number(r.cost).toFixed(2)}</span>}
+                      {r.usedParts && <span>配件：{r.usedParts}</span>}
+                      {r.handler?.realName && <span>处理人：{r.handler.realName}</span>}
+                      <span>{formatDate(r.createdAt)}</span>
                     </div>
                   </div>
                 ))}
@@ -219,14 +221,14 @@ export default function OrderDetail() {
         {/* Rating */}
         {order.rating && (
           <ScrollReveal>
-            <div className="glass-strong rounded-2xl p-6">
+            <div className="glass-strong rounded-2xl p-6 dark:bg-slate-800/88 dark:border-slate-700/30">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <Star className="w-4 h-4 text-yellow-600" />
+                <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                  <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900">用户评价</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">用户评价</h3>
               </div>
-              <div className="flex items-center gap-1 mb-3">
+              <div className="flex items-center gap-1 mb-3" role="img" aria-label={`${order.rating} 星评价`}>
                 {[1, 2, 3, 4, 5].map((i) => (
                   <motion.div
                     key={i}
@@ -234,11 +236,11 @@ export default function OrderDetail() {
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.2 + i * 0.1, type: 'spring' }}
                   >
-                    <Star className={cn('w-6 h-6', i <= order.rating! ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200')} />
+                    <Star className={cn('w-6 h-6', i <= order.rating! ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-slate-600')} aria-hidden="true" />
                   </motion.div>
                 ))}
               </div>
-              {order.feedback && <p className="text-sm text-gray-600">{order.feedback}</p>}
+              {order.feedback && <p className="text-sm text-gray-600 dark:text-slate-400">{order.feedback}</p>}
             </div>
           </ScrollReveal>
         )}
@@ -246,40 +248,42 @@ export default function OrderDetail() {
         {/* Action Buttons */}
         {showActions && (
           <ScrollReveal>
-            <div className="glass-strong rounded-2xl p-5 sticky bottom-4 z-20 shadow-lg border border-white/50">
+            <div className="glass-strong rounded-2xl p-5 sticky bottom-4 z-20 shadow-lg border border-blue-100/60 dark:border-slate-700/30 dark:bg-slate-800/88" role="toolbar" aria-label="工单操作">
               <div className="flex flex-wrap items-end gap-3">
                 {canAssign && (
-                  <FlowingButton onClick={() => handleAction('assign')}>指派维修工</FlowingButton>
+                  <FlowingButton onClick={() => handleAction('assign')} aria-label="指派维修工处理此工单">指派维修工</FlowingButton>
                 )}
                 {canAccept && (
-                  <FlowingButton onClick={() => handleAction('accept')}>接单</FlowingButton>
+                  <FlowingButton onClick={() => handleAction('accept')} aria-label="接受此工单">接单</FlowingButton>
                 )}
                 {canProcess && (
-                  <FlowingButton onClick={() => handleAction('process')}>开始处理</FlowingButton>
+                  <FlowingButton onClick={() => handleAction('process')} aria-label="开始处理此工单">开始处理</FlowingButton>
                 )}
                 {canComplete && (
                   <div className="flex flex-wrap items-end gap-3 w-full">
                     <div className="flex-1 min-w-[200px]">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">维修内容 *</label>
+                      <label htmlFor="repair-content" className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">维修内容 *</label>
                       <textarea
+                        id="repair-content"
                         value={repairContent}
                         onChange={(e) => setRepairContent(e.target.value)}
                         placeholder="请描述维修过程和结果"
                         rows={2}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 resize-none"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-100 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 resize-none"
                       />
                     </div>
                     <div className="w-28">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">费用 (元)</label>
+                      <label htmlFor="repair-cost" className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">费用 (元)</label>
                       <input
+                        id="repair-cost"
                         type="number"
                         value={repairCost}
                         onChange={(e) => setRepairCost(e.target.value)}
                         placeholder="0"
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-100 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30"
                       />
                     </div>
-                    <FlowingButton onClick={() => handleAction('complete')} disabled={!repairContent}>
+                    <FlowingButton onClick={() => handleAction('complete')} disabled={!repairContent} aria-label="确认完成维修">
                       完成维修
                     </FlowingButton>
                   </div>
@@ -287,28 +291,36 @@ export default function OrderDetail() {
                 {canRate && (
                   <div className="flex flex-wrap items-end gap-3 w-full">
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">评分</label>
-                      <div className="flex gap-1">
+                      <span className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1" id="rating-label">评分</span>
+                      <div className="flex gap-1" role="radiogroup" aria-labelledby="rating-label">
                         {[1, 2, 3, 4, 5].map((i) => (
-                          <button key={i} onClick={() => setRating(i)}>
+                          <button
+                            key={i}
+                            onClick={() => setRating(i)}
+                            aria-label={`${i} 星`}
+                            role="radio"
+                            aria-checked={i === rating}
+                            className="cursor-pointer hover:scale-110 transition-transform"
+                          >
                             <Star className={cn(
                               'w-6 h-6 transition-colors',
-                              i <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 hover:text-yellow-300',
-                            )} />
+                              i <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-slate-600 hover:text-yellow-300',
+                            )} aria-hidden="true" />
                           </button>
                         ))}
                       </div>
                     </div>
                     <div className="flex-1 min-w-[200px]">
-                      <label className="block text-xs font-medium text-gray-500 mb-1">评价内容</label>
+                      <label htmlFor="rating-feedback" className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">评价内容</label>
                       <input
+                        id="rating-feedback"
                         value={feedback}
                         onChange={(e) => setFeedback(e.target.value)}
                         placeholder="您的评价"
-                        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-600 dark:bg-slate-700/50 dark:text-gray-100 dark:placeholder:text-slate-500 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30"
                       />
                     </div>
-                    <FlowingButton onClick={() => handleAction('rating')} disabled={!rating}>
+                    <FlowingButton onClick={() => handleAction('rating')} disabled={!rating} aria-label="提交工单评价">
                       提交评价
                     </FlowingButton>
                   </div>
@@ -317,6 +329,7 @@ export default function OrderDetail() {
                   <Button
                     variant="destructive"
                     onClick={() => { if (confirm('确认取消该工单？')) handleAction('cancel'); }}
+                    aria-label="取消此工单"
                   >
                     取消工单
                   </Button>
@@ -329,27 +342,30 @@ export default function OrderDetail() {
         {/* Operation Logs */}
         {order.orderLogs?.length > 0 && (
           <ScrollReveal>
-            <div className="glass-strong rounded-2xl p-6">
+            <div className="glass-strong rounded-2xl p-6 dark:bg-slate-800/88 dark:border-slate-700/30">
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-4 h-4 text-gray-600" />
+                <div className="w-8 h-8 bg-gray-100 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-gray-600 dark:text-slate-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900">操作日志</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">操作日志</h3>
               </div>
-              <div className="space-y-0">
+              <div className="space-y-0" role="list" aria-label="工单操作日志">
                 {order.orderLogs.map((log: any, i: number) => (
-                  <div key={log.id} className="flex gap-3">
+                  <div key={log.id} className="flex gap-3" role="listitem">
                     <div className="flex flex-col items-center">
-                      <div className={cn('w-2.5 h-2.5 rounded-full mt-1.5', i === 0 ? 'bg-primary-500 ring-4 ring-primary-100' : 'bg-gray-300')} />
-                      {i < order.orderLogs.length - 1 && <div className="w-0.5 flex-1 bg-gray-200 my-0.5" />}
+                      <div className={cn(
+                        'w-2.5 h-2.5 rounded-full mt-1.5',
+                        i === 0 ? 'bg-primary-500 ring-4 ring-primary-100 dark:ring-primary-900/40' : 'bg-gray-300 dark:bg-slate-600',
+                      )} />
+                      {i < order.orderLogs.length - 1 && <div className="w-0.5 flex-1 bg-gray-200 dark:bg-slate-600 my-0.5" />}
                     </div>
                     <div className="flex-1 pb-4">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-sm font-medium text-gray-900">{log.action}</span>
-                        <span className="text-xs text-gray-400">{formatDate(log.createdAt)}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{log.action}</span>
+                        <span className="text-xs text-gray-400 dark:text-slate-500">{formatDate(log.createdAt)}</span>
                       </div>
-                      {log.remark && <p className="text-sm text-gray-500">{log.remark}</p>}
-                      <p className="text-xs text-gray-400 mt-0.5">{log.operator?.realName}</p>
+                      {log.remark && <p className="text-sm text-gray-500 dark:text-slate-400">{log.remark}</p>}
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{log.operator?.realName}</p>
                     </div>
                   </div>
                 ))}
@@ -370,12 +386,12 @@ export default function OrderDetail() {
 function InfoRow({ icon: Icon, label, value, badge }: { icon: any; label: string; value: string; badge?: string }) {
   return (
     <div className="flex items-center gap-2.5">
-      <Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-      <span className="text-gray-500 flex-shrink-0">{label}：</span>
+      <Icon className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" aria-hidden="true" />
+      <span className="text-gray-500 dark:text-slate-400 flex-shrink-0">{label}：</span>
       {badge ? (
-        <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', badge)}>{value}</span>
+        <span className={cn('px-2 py-0.5 rounded text-xs font-medium border', badge)}>{value || '-'}</span>
       ) : (
-        <span className="text-gray-800 font-medium truncate">{value}</span>
+        <span className="text-gray-800 dark:text-gray-200 font-medium truncate">{value || '-'}</span>
       )}
     </div>
   );

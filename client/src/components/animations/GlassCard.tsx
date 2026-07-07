@@ -16,7 +16,7 @@ export default function GlassCard({ children, className = '', hover = true, onCl
       onClick={onClick}
       className={cn(
         'glass rounded-2xl p-6 transition-colors duration-200',
-        hover && 'cursor-pointer',
+        hover && onClick && 'cursor-pointer',
         className,
       )}
     >

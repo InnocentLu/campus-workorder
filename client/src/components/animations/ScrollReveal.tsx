@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 
 interface ScrollRevealProps {
@@ -28,6 +28,14 @@ export default function ScrollReveal({
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, margin: '-80px' });
   const offset = directionMap[direction];
+  const [prefersReduced] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+
+  // Skip motion animation for reduced-motion users
+  if (prefersReduced) {
+    return <div ref={ref} className={className}>{children}</div>;
+  }
 
   return (
     <motion.div

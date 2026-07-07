@@ -22,10 +22,19 @@ export default function AnimatedCounter({
   const isInView = useInView(ref, { once: true });
   const [count, setCount] = useState(from);
   const started = useRef(false);
+  const prefersReduced = useRef(
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
 
   useEffect(() => {
     if (!isInView || started.current) return;
     started.current = true;
+
+    // Skip animation for users who prefer reduced motion
+    if (prefersReduced.current) {
+      setCount(to);
+      return;
+    }
 
     const startTime = performance.now();
     const range = to - from;
@@ -33,7 +42,6 @@ export default function AnimatedCounter({
     function tick(now: number) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / (duration * 1000), 1);
-      // Ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       setCount(Math.round(from + range * eased));
 

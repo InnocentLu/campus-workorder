@@ -66,18 +66,21 @@ export default function OrderList() {
       <ScrollReveal>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-            <p className="text-sm text-gray-500 mt-1">共 {total} 个工单</p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">共 {total} 个工单</p>
           </div>
           <div className="flex items-center gap-3">
             {/* View toggle */}
-            <div className="hidden sm:flex items-center gap-1 bg-gray-100/80 rounded-xl p-1">
+            <div className="hidden sm:flex items-center gap-1 bg-gray-100/80 dark:bg-slate-800/80 rounded-xl p-1" role="radiogroup" aria-label="视图模式">
               <button
                 onClick={() => toggleView('card')}
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5',
-                  viewMode === 'card' ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-700',
+                  viewMode === 'card' ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200',
                 )}
+                role="radio"
+                aria-checked={viewMode === 'card'}
+                aria-label="卡片视图"
               >
                 <LayoutGrid className="w-4 h-4" /> 卡片
               </button>
@@ -85,8 +88,11 @@ export default function OrderList() {
                 onClick={() => toggleView('table')}
                 className={cn(
                   'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1.5',
-                  viewMode === 'table' ? 'bg-white text-primary-700 shadow-sm' : 'text-gray-500 hover:text-gray-700',
+                  viewMode === 'table' ? 'bg-white dark:bg-slate-700 text-primary-700 dark:text-primary-400 shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200',
                 )}
+                role="radio"
+                aria-checked={viewMode === 'table'}
+                aria-label="表格视图"
               >
                 <List className="w-4 h-4" /> 表格
               </button>
