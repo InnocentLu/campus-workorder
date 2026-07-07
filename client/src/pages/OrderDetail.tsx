@@ -50,12 +50,60 @@ function InfoRow({
       <Icon className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" aria-hidden="true" />
       <span className="text-sm text-gray-500 dark:text-slate-400 flex-shrink-0">{label}：</span>
       {badge ? (
-        <span className={cn('px-2 py-0.5 rounded-md text-xs font-medium border', badge)}>
+        <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-medium border', badge)}>
           {value || '-'}
         </span>
       ) : (
         <span className="text-sm text-gray-800 dark:text-gray-200 font-medium truncate">{value || '-'}</span>
       )}
+    </div>
+  );
+}
+
+/* Phone row with copy-to-clipboard and hover highlight */
+function PhoneRow({
+  label,
+  phone,
+  iconColor = 'text-blue-500',
+}: {
+  label: string;
+  phone: string;
+  iconColor?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(phone).then(() => {
+      setCopied(true);
+      toast.success('号码已复制');
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+  return (
+    <div className="flex items-center gap-2.5 min-w-0 group/phone rounded-lg px-2 py-1.5 -mx-2 transition-colors duration-200 hover:bg-blue-50/60 dark:hover:bg-blue-900/10">
+      <Phone className={cn('w-4 h-4 flex-shrink-0', iconColor)} aria-hidden="true" />
+      <span className="text-sm text-gray-500 dark:text-slate-400 flex-shrink-0">{label}：</span>
+      <a
+        href={`tel:${phone}`}
+        className="text-sm text-gray-800 dark:text-gray-200 font-medium tabular-nums hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+      >
+        {phone}
+      </a>
+      <button
+        onClick={handleCopy}
+        className={cn(
+          'ml-auto p-1.5 rounded-lg transition-all duration-200 flex-shrink-0',
+          'opacity-0 group-hover/phone:opacity-100',
+          'hover:bg-blue-100 dark:hover:bg-blue-900/30',
+          copied ? 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' : 'text-gray-400 hover:text-primary-500',
+        )}
+        aria-label={`复制 ${label}: ${phone}`}
+      >
+        {copied ? (
+          <CheckCircle2 className="w-4 h-4" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
+      </button>
     </div>
   );
 }
@@ -680,48 +728,58 @@ export default function OrderDetail() {
                 className="overflow-hidden"
               >
                 <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {/* 提交人 */}
                   <InfoRow
                     icon={User}
                     label="提交人"
                     value={`${order.submitter?.realName || '-'} (${getRoleLabel(order.submitter?.role)})`}
                   />
+                  {/* 维修工 */}
                   <InfoRow
                     icon={User}
                     label="维修工"
                     value={order.assignee?.realName || '待指派'}
                   />
-                  {/* Worker trade & contact for communication */}
-                  {order.assignee && (
-                    <>
-                      {order.assignee.trade && (
-                        <InfoRow
-                          icon={Wrench}
-                          label="工种"
-                          value={order.assignee.trade}
-                        />
-                      )}
-                      {order.assignee.phone && (
-                        <InfoRow
-                          icon={Phone}
-                          label="维修工电话"
-                          value={order.assignee.phone}
-                        />
-                      )}
-                    </>
+                  {/* Worker trade */}
+                  {order.assignee?.trade && (
+                    <InfoRow icon={Wrench} label="工种" value={order.assignee.trade} />
                   )}
-                  <InfoRow icon={FileText} label="类别" value={order.category || '-'} />
+                  {/* 维修工电话 — with copy button */}
+                  {order.assignee?.phone && (
+                    <PhoneRow
+                      label="维修工电话"
+                      phone={order.assignee.phone}
+                      iconColor="text-blue-500"
+                    />
+                  )}
+                  {/* 工单类别 */}
+                  <InfoRow icon={FileText} label="工单类别" value={order.category || '-'} />
+                  {/* 优先级 */}
                   <InfoRow
                     icon={AlertCircle}
                     label="优先级"
                     value={order.priority || '-'}
                     badge={getPriorityColor(order.priority)}
                   />
-                  {order.location && (
-                    <InfoRow icon={MapPin} label="位置" value={order.location} />
-                  )}
+                  {/* 报修人联系电话 — role-aware label + copy */}
                   {order.contactPhone && (
-                    <InfoRow icon={Phone} label="联系电话" value={order.contactPhone} />
+                    <PhoneRow
+                      label={
+                        order.submitter?.role === 'STU'
+                          ? '学生联系电话'
+                          : order.submitter?.role === 'TCH'
+                          ? '教师联系电话'
+                          : '报修人联系电话'
+                      }
+                      phone={order.contactPhone}
+                      iconColor="text-emerald-500"
+                    />
                   )}
+                  {/* 报修位置 */}
+                  {order.location && (
+                    <InfoRow icon={MapPin} label="报修位置" value={order.location} />
+                  )}
+                  {/* 预约时间 */}
                   {order.scheduledTime && (
                     <InfoRow
                       icon={Calendar}
@@ -729,14 +787,13 @@ export default function OrderDetail() {
                       value={formatDate(order.scheduledTime)}
                     />
                   )}
-                  {/* Status row (not in hero context) */}
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <Clock className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm text-gray-500 dark:text-slate-400 flex-shrink-0">状态：</span>
-                    <span className={cn('px-2 py-0.5 rounded-md text-xs font-medium border', getStatusColor(order.status))}>
-                      {getStatusLabel(order.status)}
-                    </span>
-                  </div>
+                  {/* 工单状态 */}
+                  <InfoRow
+                    icon={Clock}
+                    label="工单状态"
+                    value={getStatusLabel(order.status)}
+                    badge={getStatusColor(order.status)}
+                  />
                 </div>
               </motion.div>
             )}
