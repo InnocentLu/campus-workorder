@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard, ClipboardList, PlusCircle, Users,
   BarChart3, User, LogOut, Menu, X,
-  Bell, Wrench, FileText, CheckSquare,
+  Bell, Wrench, FileText,
   Sun, Moon,
 } from 'lucide-react';
 
@@ -23,7 +23,6 @@ const allMenus: MenuItem[] = [
   { label: '提交工单', icon: PlusCircle, path: '/orders/submit', roles: ['STU', 'TCH'] },
   { label: '我的工单', icon: ClipboardList, path: '/orders/my', roles: ['STU'] },
   { label: '部门工单', icon: FileText, path: '/orders/dept', roles: ['TCH'] },
-  { label: '待接单', icon: CheckSquare, path: '/orders/pending', roles: ['WRK'] },
   { label: '我的任务', icon: Wrench, path: '/orders/tasks', roles: ['WRK'] },
   { label: '工单管理', icon: ClipboardList, path: '/orders/manage', roles: ['ADM'] },
   { label: '用户管理', icon: Users, path: '/users', roles: ['ADM'] },

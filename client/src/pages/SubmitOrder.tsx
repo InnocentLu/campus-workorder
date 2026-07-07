@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import client from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { ScrollReveal, FlowingButton } from '@/components/animations';
+import ImageUpload from '@/components/ImageUpload';
 import { cn } from '@/lib/utils';
 import {
   Zap, Wifi, Hammer, Wind, DoorOpen, MoreHorizontal,
@@ -32,13 +33,14 @@ export default function SubmitOrder() {
   const [form, setForm] = useState({
     title: '', description: '', category: '',
     categories: [] as string[],
+    images: [] as string[],
     location: '', contactPhone: '', scheduledTime: '',
     priority: 'MEDIUM' as string,
   });
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const update = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
+  const update = (key: string, value: string | string[]) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const toggleCategory = (value: string) => {
     setForm((prev) => ({
@@ -224,6 +226,11 @@ export default function SubmitOrder() {
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-300 transition-all resize-none"
                 />
               </div>
+              <ImageUpload
+                images={form.images}
+                onChange={(imgs) => update('images', imgs as any)}
+                maxCount={6}
+              />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">优先级</label>
                 <div className="flex gap-2">

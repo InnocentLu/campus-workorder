@@ -20,6 +20,7 @@ import {
   AnimatedCounter,
   StaggerList,
 } from '@/components/animations';
+import AvatarUpload from '@/components/AvatarUpload';
 import {
   User,
   Lock,
@@ -290,26 +291,22 @@ export default function Profile() {
         {/* ── Avatar Section ── */}
         <ScrollReveal>
           <GlassCard className="p-6 sm:p-8 text-center">
-            {/* Circular avatar with gradient ring */}
-            <div className="inline-block mb-4">
-              <div className="p-[3px] rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600">
-                <div className="w-24 h-24 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-gray-700 dark:text-gray-200 select-none">
-                    {user?.realName?.[0] || 'U'}
-                  </span>
-                </div>
-              </div>
+            {/* Avatar upload */}
+            <div className="flex justify-center mb-2">
+              <AvatarUpload
+                currentAvatar={user?.avatar || null}
+                userName={user?.realName}
+                size="lg"
+                onUpload={(base64) => {
+                  // TODO: POST /users/me/avatar { avatar: base64 }
+                  updateUser({ avatar: base64 } as any);
+                }}
+                onRemove={() => {
+                  // TODO: DELETE /users/me/avatar
+                  updateUser({ avatar: undefined } as any);
+                }}
+              />
             </div>
-
-            {/* Change avatar button */}
-            <button
-              type="button"
-              onClick={() => toast.info('功能开发中')}
-              className="block mx-auto mb-4 text-xs text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline underline-offset-2"
-              aria-label="更换头像"
-            >
-              更换头像
-            </button>
 
             {/* User name */}
             <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">
