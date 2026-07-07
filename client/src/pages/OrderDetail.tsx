@@ -14,7 +14,7 @@ import {
   ArrowLeft, User, Phone, MapPin, Calendar, Star, Wrench,
   CheckCircle2, Send, Clock, AlertCircle, FileText, MessageSquare,
   ChevronDown, ChevronUp, Package, Image as ImageIcon,
-  X, Search, Loader2, ChevronLeft, ChevronRight,
+  X, Search, Loader2, ChevronLeft, ChevronRight, Copy,
 } from 'lucide-react';
 
 /* ============================================================
@@ -258,16 +258,27 @@ export default function OrderDetail() {
     fetchWorkers();
   }, [fetchWorkers]);
 
-  /* ---- Filtered workers ---- */
+  /* ---- Filtered workers with trade matching ---- */
   const filteredWorkers = useMemo(() => {
-    if (!workerSearch.trim()) return workers;
-    const q = workerSearch.toLowerCase();
-    return workers.filter(
-      (w) =>
-        w.realName?.toLowerCase().includes(q) ||
-        w.username?.toLowerCase().includes(q)
-    );
-  }, [workers, workerSearch]);
+    let result = workers;
+    // Auto-match: prioritize workers whose trade matches the order category
+    const orderTrade = order?.category;
+    if (orderTrade) {
+      const matching = workers.filter((w: any) => w.trade === orderTrade);
+      const others = workers.filter((w: any) => w.trade !== orderTrade);
+      result = [...matching, ...others];
+    }
+    if (workerSearch.trim()) {
+      const q = workerSearch.toLowerCase();
+      result = result.filter(
+        (w: any) =>
+          w.realName?.toLowerCase().includes(q) ||
+          w.username?.toLowerCase().includes(q) ||
+          (w.trade && w.trade.toLowerCase().includes(q)),
+      );
+    }
+    return result;
+  }, [workers, workerSearch, order?.category]);
 
   /* ---- Permissions ---- */
   const canAssign = user?.role === 'ADM' && order?.status === 'PENDING';
@@ -679,6 +690,25 @@ export default function OrderDetail() {
                     label="维修工"
                     value={order.assignee?.realName || '待指派'}
                   />
+                  {/* Worker trade & contact for communication */}
+                  {order.assignee && (
+                    <>
+                      {order.assignee.trade && (
+                        <InfoRow
+                          icon={Wrench}
+                          label="工种"
+                          value={order.assignee.trade}
+                        />
+                      )}
+                      {order.assignee.phone && (
+                        <InfoRow
+                          icon={Phone}
+                          label="维修工电话"
+                          value={order.assignee.phone}
+                        />
+                      )}
+                    </>
+                  )}
                   <InfoRow icon={FileText} label="类别" value={order.category || '-'} />
                   <InfoRow
                     icon={AlertCircle}
@@ -1158,13 +1188,40 @@ export default function OrderDetail() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {w.realName || w.username}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {w.realName || w.username}
+                            </p>
+                            {(w as any).trade && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex-shrink-0">
+                                <Wrench className="w-2.5 h-2.5" />
+                                {(w as any).trade}
+                              </span>
+                            )}
+                            {order?.category === (w as any).trade && (
+                              <span className="text-[10px] px-1 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">
+                                匹配
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-400 dark:text-slate-500">
                             @{w.username}
                             {w.department ? ` · ${w.department}` : ''}
                           </p>
+                          {(w as any).phone && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.clipboard.writeText((w as any).phone).then(() => toast.success('号码已复制'));
+                              }}
+                              className="text-xs text-gray-500 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors flex items-center gap-1 mt-0.5 group"
+                              aria-label={`复制 ${w.realName} 的电话`}
+                            >
+                              <Phone className="w-3 h-3" />
+                              {(w as any).phone}
+                              <Copy className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Checkmark */}
