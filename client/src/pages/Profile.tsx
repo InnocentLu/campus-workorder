@@ -691,13 +691,15 @@ export default function Profile() {
         {/* ── Quick Actions ── */}
         <motion.div variants={rightItem}>
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-3">
-            <Button
-              onClick={() => navigate('/orders/submit')}
-              className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#7C3AED] text-white font-medium text-sm hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
-            >
-              <PlusCircle className="w-4 h-4 mr-2" />
-              快速报修
-            </Button>
+            {(role === 'STU' || role === 'TCH') && (
+              <Button
+                onClick={() => navigate('/orders/submit')}
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#7C3AED] text-white font-medium text-sm hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+              >
+                <PlusCircle className="w-4 h-4 mr-2" />
+                快速报修
+              </Button>
+            )}
             <Button
               onClick={() =>
                 navigate(
