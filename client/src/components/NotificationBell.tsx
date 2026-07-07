@@ -25,7 +25,6 @@ export default function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
   const [showBroadcast, setShowBroadcast] = useState(false);
-  const [bcTitle, setBcTitle] = useState('');
   const [bcContent, setBcContent] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -64,13 +63,12 @@ export default function NotificationBell() {
   };
 
   const sendBroadcast = async () => {
-    if (!bcTitle.trim()) { toast.error('请输入广播标题'); return; }
+    if (!bcContent.trim()) { toast.error('请输入广播内容'); return; }
     setSending(true);
     try {
-      await client.post('/notifications/broadcast', { title: bcTitle, content: bcContent });
+      await client.post('/notifications/broadcast', { title: '系统通知', content: bcContent });
       toast.success('广播已发送');
       setShowBroadcast(false);
-      setBcTitle('');
       setBcContent('');
     } catch { toast.error('发送失败'); }
     finally { setSending(false); }
@@ -211,20 +209,12 @@ export default function NotificationBell() {
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="p-5 space-y-4">
+              <div className="p-5">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">标题 *</label>
-                  <input
-                    value={bcTitle} onChange={(e) => setBcTitle(e.target.value)}
-                    placeholder="广播标题"
-                    className="w-full h-11 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">内容</label>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-slate-400 mb-1">广播内容 *</label>
                   <textarea
                     value={bcContent} onChange={(e) => setBcContent(e.target.value)}
-                    rows={3} placeholder="广播内容（可选）"
+                    rows={4} placeholder="输入要广播给所有用户的内容..."
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none"
                   />
                 </div>
