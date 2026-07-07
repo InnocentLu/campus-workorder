@@ -427,6 +427,14 @@ export default function OrderDetail() {
               {getStatusLabel(order.status)}
             </span>
 
+            {/* Trade tag */}
+            {order.category && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-white/20 text-white/90 border border-white/30 backdrop-blur-sm">
+                <Wrench className="w-3 h-3" />
+                {order.category}
+              </span>
+            )}
+
             <span className="text-sm text-white/60 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" aria-hidden="true" />
               提交于 {formatDate(order.createdAt)}

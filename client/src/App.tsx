@@ -9,6 +9,7 @@ import OrderList from '@/pages/OrderList';
 import OrderDetail from '@/pages/OrderDetail';
 import SubmitOrder from '@/pages/SubmitOrder';
 import UserManagement from '@/pages/UserManagement';
+import TradeManagement from '@/pages/TradeManagement';
 import Profile from '@/pages/Profile';
 
 function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/orders/submit" element={<ProtectedRoute roles={['STU', 'TCH']}><SubmitOrder /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<OrderDetail />} />
           <Route path="/users" element={<ProtectedRoute roles={['ADM']}><UserManagement /></ProtectedRoute>} />
+          <Route path="/trades" element={<ProtectedRoute roles={['ADM']}><TradeManagement /></ProtectedRoute>} />
           <Route path="/profile" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

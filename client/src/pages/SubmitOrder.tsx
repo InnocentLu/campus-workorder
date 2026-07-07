@@ -8,16 +8,16 @@ import { ScrollReveal, FlowingButton } from '@/components/animations';
 import { cn } from '@/lib/utils';
 import {
   Zap, Wifi, Hammer, Wind, DoorOpen, MoreHorizontal,
-  CheckCircle2, ChevronLeft, ChevronRight, FileText, MapPin, Send,
+  CheckCircle2, ChevronLeft, ChevronRight, FileText, MapPin, Send, X,
 } from 'lucide-react';
 
 const categories = [
-  { value: '水电', label: '水电维修', icon: Zap, color: 'text-yellow-500 bg-yellow-50 border-yellow-200' },
-  { value: '网络', label: '网络故障', icon: Wifi, color: 'text-blue-500 bg-blue-50 border-blue-200' },
-  { value: '家具', label: '家具维修', icon: Hammer, color: 'text-orange-500 bg-orange-50 border-orange-200' },
-  { value: '空调', label: '空调维修', icon: Wind, color: 'text-cyan-500 bg-cyan-50 border-cyan-200' },
-  { value: '门窗', label: '门窗维修', icon: DoorOpen, color: 'text-emerald-500 bg-emerald-50 border-emerald-200' },
-  { value: '其他', label: '其他', icon: MoreHorizontal, color: 'text-gray-500 bg-gray-50 border-gray-200' },
+  { value: '水电', label: '水电维修', icon: Zap, color: 'text-yellow-500 bg-yellow-50 border-yellow-200', trade: '水电维修' },
+  { value: '网络', label: '网络故障', icon: Wifi, color: 'text-blue-500 bg-blue-50 border-blue-200', trade: '网络故障' },
+  { value: '家具', label: '家具维修', icon: Hammer, color: 'text-orange-500 bg-orange-50 border-orange-200', trade: '家具维修' },
+  { value: '空调', label: '空调检修', icon: Wind, color: 'text-cyan-500 bg-cyan-50 border-cyan-200', trade: '空调检修' },
+  { value: '门窗', label: '门窗修缮', icon: DoorOpen, color: 'text-emerald-500 bg-emerald-50 border-emerald-200', trade: '门窗修缮' },
+  { value: '其他', label: '其他', icon: MoreHorizontal, color: 'text-gray-500 bg-gray-50 border-gray-200', trade: '其他' },
 ];
 
 const steps = [
@@ -31,6 +31,7 @@ export default function SubmitOrder() {
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState({
     title: '', description: '', category: '',
+    categories: [] as string[],
     location: '', contactPhone: '', scheduledTime: '',
     priority: 'MEDIUM' as string,
   });
@@ -39,8 +40,20 @@ export default function SubmitOrder() {
 
   const update = (key: string, value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
+  const toggleCategory = (value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      categories: prev.categories.includes(value)
+        ? prev.categories.filter((c) => c !== value)
+        : [...prev.categories, value],
+      category: prev.categories.length === 1 && prev.categories.includes(value)
+        ? ''
+        : prev.categories.filter((c) => c !== value)[0] || value,
+    }));
+  };
+
   const canNext = () => {
-    if (currentStep === 0) return !!form.category;
+    if (currentStep === 0) return form.categories.length > 0;
     if (currentStep === 1) return !!form.title;
     return true;
   };
@@ -128,31 +141,59 @@ export default function SubmitOrder() {
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">请选择问题类别</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">请选择故障对应工种</h3>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">可选多项，匹配多工种问题</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {categories.map((cat) => (
-                  <motion.button
-                    key={cat.value}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => update('category', cat.value)}
-                    className={cn(
-                      'p-5 rounded-2xl border-2 text-center transition-all duration-200',
-                      form.category === cat.value
-                        ? 'border-primary-500 bg-primary-50 shadow-md shadow-primary-100'
-                        : 'border-gray-100 hover:border-gray-300 bg-white',
-                    )}
-                  >
-                    <div className={cn(
-                      'w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2 border',
-                      cat.color,
-                    )}>
-                      <cat.icon className="w-6 h-6" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">{cat.label}</span>
-                  </motion.button>
-                ))}
+                {categories.map((cat) => {
+                  const isSelected = form.categories.includes(cat.value);
+                  return (
+                    <motion.button
+                      key={cat.value}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => toggleCategory(cat.value)}
+                      className={cn(
+                        'p-5 rounded-2xl border-2 text-center transition-all duration-200 relative',
+                        isSelected
+                          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md shadow-primary-100 dark:shadow-primary-900/20'
+                          : 'border-gray-100 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 bg-white dark:bg-slate-800',
+                      )}
+                      aria-pressed={isSelected}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-primary-600 rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      )}
+                      <div className={cn(
+                        'w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-2 border',
+                        cat.color,
+                      )}>
+                        <cat.icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{cat.label}</span>
+                      <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-0.5">{cat.trade}</p>
+                    </motion.button>
+                  );
+                })}
               </div>
+              {/* Selected trades preview */}
+              {form.categories.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="text-xs text-gray-500 dark:text-slate-400">已选工种：</span>
+                  {form.categories.map((c) => {
+                    const cat = categories.find((x) => x.value === c);
+                    return (
+                      <span key={c} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                        {cat?.label || c}
+                        <button onClick={(e) => { e.stopPropagation(); toggleCategory(c); }} aria-label={`移除 ${cat?.label || c}`}>
+                          <X className="w-3 h-3 cursor-pointer hover:text-red-500" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </motion.div>
           ) : currentStep === 1 ? (
             <motion.div
@@ -216,7 +257,7 @@ export default function SubmitOrder() {
 
               {/* Review */}
               <div className="p-4 bg-gray-50 rounded-xl space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">类别</span><span className="font-medium">{form.category}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500 dark:text-slate-400">工种</span><div className="flex flex-wrap gap-1 justify-end">{form.categories.map((c) => { const cat = categories.find((x) => x.value === c); return <span key={c} className="px-2 py-0.5 rounded-md text-xs font-medium bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300">{cat?.label || c}</span>; })}</div></div>
                 <div className="flex justify-between"><span className="text-gray-500">标题</span><span className="font-medium">{form.title}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">优先级</span><span className="font-medium">{{ LOW: '低', MEDIUM: '中', HIGH: '高', URGENT: '紧急' }[form.priority]}</span></div>
                 {form.description && <div className="flex justify-between"><span className="text-gray-500">描述</span><span className="font-medium text-right max-w-[60%] truncate">{form.description}</span></div>}
