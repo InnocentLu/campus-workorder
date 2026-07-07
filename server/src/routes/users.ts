@@ -98,7 +98,7 @@ router.get('/', rbac('ADM'), async (req: AuthRequest, res: Response) => {
         select: {
           id: true, username: true, realName: true, role: true,
           phone: true, email: true, department: true,
-          studentId: true, employeeId: true, status: true,
+          studentId: true, employeeId: true, avatar: true, trade: true, status: true,
           createdAt: true, updatedAt: true,
         },
       }),
