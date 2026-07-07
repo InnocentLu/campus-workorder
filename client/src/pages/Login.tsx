@@ -13,7 +13,6 @@ import {
   Lock,
   ClipboardList,
   CheckCircle,
-  ChevronDown,
   IdCard,
   GraduationCap,
   Building2,
@@ -122,7 +121,6 @@ export default function Login() {
   /* ── Shared ── */
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showHints, setShowHints] = useState(false);
   const { login } = useAuthStore();
   const navigate = useNavigate();
 
@@ -591,49 +589,6 @@ export default function Login() {
               )}
             </motion.p>
 
-            {/* ── Test accounts (only on login tab) ── */}
-            <AnimatePresence>
-              {isLogin && (
-                <motion.div
-                  variants={staggerItem}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="mt-3"
-                >
-                  <button
-                    onClick={() => setShowHints(!showHints)}
-                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-300 dark:text-gray-600 hover:text-gray-400 dark:hover:text-gray-500 transition-colors"
-                  >
-                    <span>测试账号</span>
-                    <motion.span
-                      animate={{ rotate: showHints ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ChevronDown className="w-3 h-3" />
-                    </motion.span>
-                  </button>
-                  <AnimatePresence>
-                    {showHints && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mt-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
-                          <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">可用账号：</p>
-                          <p><span className="text-purple-500 dark:text-purple-400 font-medium">管理员：</span>admin / 123456</p>
-                          <p><span className="text-orange-500 dark:text-orange-400 font-medium">维修工：</span>worker1 / 123456</p>
-                          <p><span className="text-emerald-500 dark:text-emerald-400 font-medium">学生：</span>student1 / 123456</p>
-                          <p><span className="text-blue-500 dark:text-blue-400 font-medium">教师：</span>teacher1 / 123456</p>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>{/* end glass card */}
         </motion.div>
       </motion.div>

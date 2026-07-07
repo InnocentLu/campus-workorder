@@ -148,7 +148,7 @@ function getActionLabel(action: string): string {
   const map: Record<string, string> = {
     SUBMIT: '提交工单',
     ASSIGN: '派单',
-    ACCEPT: '接单',
+    ACCEPT: '派单',
     PROCESS: '处理中',
     COMPLETE: '完成',
     RATE: '评价',
@@ -172,8 +172,8 @@ function getActionSuccessMsg(action: string): string {
 const TIMELINE_STEPS = [
   { key: 'SUBMIT', label: '提交工单', icon: Send },
   { key: 'ASSIGN', label: '派单', icon: User },
-  { key: 'ACCEPT', label: '接单', icon: CheckCircle2 },
-  { key: 'PROCESS', label: '处理中', icon: Wrench },
+  { key: 'ACCEPT', label: '处理中', icon: Wrench }, // 派单后直接处理
+  { key: 'PROCESS', label: '维修中', icon: Wrench },
   { key: 'COMPLETE', label: '完成', icon: Package },
   { key: 'RATE', label: '评价', icon: Star },
 ] as const;
@@ -330,14 +330,14 @@ export default function OrderDetail() {
 
   /* ---- Permissions ---- */
   const canAssign = user?.role === 'ADM' && order?.status === 'PENDING';
-  const canAccept = user?.role === 'WRK' && order?.status === 'ASSIGNED';
   const canProcess = user?.role === 'WRK' && order?.status === 'ASSIGNED';
-  const canComplete = user?.role === 'WRK' && order?.status === 'PROCESSING';
+  const canComplete = user?.role === 'WRK' && ['ASSIGNED', 'PROCESSING'].includes(order?.status);
+  const canRequestComplete = user?.role === 'WRK' && order?.status === 'PROCESSING' && user?.id === order?.assigneeId;
   const canRate = user?.id === order?.submitterId && order?.status === 'COMPLETED';
   const canCancel =
     user?.id === order?.submitterId && ['PENDING', 'ASSIGNED'].includes(order?.status);
   const showActions =
-    canAssign || canAccept || canProcess || canComplete || canRate || canCancel;
+    canAssign || canProcess || canComplete || canRequestComplete || canRate || canCancel;
 
   /* ---- Timeline ---- */
   const timelineSteps = useMemo(() => {
@@ -1354,19 +1354,7 @@ export default function OrderDetail() {
                   </FlowingButton>
                 )}
 
-                {/* Accept */}
-                {canAccept && (
-                  <FlowingButton
-                    onClick={() => handleAction('accept')}
-                    loading={actionLoading}
-                    aria-label="接受此工单"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    接单
-                  </FlowingButton>
-                )}
-
-                {/* Start processing */}
+                {/* Start processing — directly from ASSIGNED (no accept step) */}
                 {canProcess && (
                   <FlowingButton
                     onClick={() => handleAction('process')}

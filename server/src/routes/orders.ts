@@ -17,9 +17,12 @@ function generateOrderNo(): string {
   return `WO${date}${rand}`;
 }
 
-// POST /orders - submit work order (STU/TCH)
+// POST /orders - submit work order (STU/TCH only, WRK/ADM denied)
 router.post('/', async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user!.role === 'WRK' || req.user!.role === 'ADM') {
+      return fail(res, '仅学生和教师可提交报修工单', 403);
+    }
     const schema = z.object({
       title: z.string().min(1).max(200),
       description: z.string().optional(),
@@ -49,6 +52,21 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     await prisma.orderLog.create({
       data: { orderId: order.id, operatorId: req.user!.userId, action: 'SUBMIT', remark: '提交工单' },
     });
+
+    // Notify all admins
+    const admins = await prisma.user.findMany({ where: { role: 'ADM' }, select: { id: true } });
+    if (admins.length > 0) {
+      await prisma.notification.createMany({
+        data: admins.map((a) => ({
+          userId: a.id,
+          senderId: req.user!.userId,
+          type: 'ORDER_STATUS',
+          title: '新工单待指派',
+          content: `${user?.realName || '用户'} 提交了工单「${body.title}」`,
+          link: `/orders/${order.id}`,
+        })),
+      });
+    }
 
     success(res, order, '工单提交成功');
   } catch (err: any) {
