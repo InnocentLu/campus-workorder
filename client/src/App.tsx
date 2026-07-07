@@ -43,7 +43,6 @@ export default function App() {
           <Route path="/admin/dashboard" element={<ProtectedRoute roles={['ADM']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/orders/my" element={<ProtectedRoute roles={['STU']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/dept" element={<ProtectedRoute roles={['TCH']}><OrderList /></ProtectedRoute>} />
-          <Route path="/orders/pending" element={<ProtectedRoute roles={['WRK']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/tasks" element={<ProtectedRoute roles={['WRK']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/manage" element={<ProtectedRoute roles={['ADM']}><OrderList /></ProtectedRoute>} />
           <Route path="/orders/submit" element={<ProtectedRoute roles={['STU', 'TCH']}><SubmitOrder /></ProtectedRoute>} />

@@ -523,32 +523,6 @@ export default function Profile() {
         initial="hidden"
         animate="visible"
       >
-        {/* ── WRK: Today's pending alert ── */}
-        {role === 'WRK' && !statsLoading && (
-          <motion.div
-            variants={rightItem}
-            className="flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800/50"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-800/30 flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-                今日待接单：{stats.todayPendingOrders} 件
-              </p>
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                请及时处理待接单工单
-              </p>
-            </div>
-            <Link
-              to="/orders/pending"
-              className="ml-auto text-sm text-amber-700 dark:text-amber-300 font-medium hover:text-amber-900 dark:hover:text-amber-100 transition-colors flex items-center gap-1 flex-shrink-0"
-            >
-              去接单 <ChevronRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
-        )}
-
         {/* ── Mini Trend Chart ── */}
         <motion.div variants={rightItem}>
           <GlassCard className="p-5">
