@@ -3,7 +3,9 @@ import { z } from 'zod';
 import prisma from '../utils/prisma';
 import { success, fail, paginated } from '../utils/response';
 import { auth } from '../middleware/auth';
+import { rbac } from '../middleware/rbac';
 import { AuthRequest } from '../types';
+import { createNotification, notifyOrderStakeholders } from '../services/notification';
 
 const router = Router();
 router.use(auth);
@@ -286,6 +288,135 @@ router.put('/:id/rating', async (req: AuthRequest, res: Response) => {
       data: { orderId: id, operatorId: req.user!.userId, action: 'RATE', remark: `评价 ${body.rating} 星` },
     });
     success(res, order, '评价成功');
+  } catch (err: any) {
+    if (err instanceof z.ZodError) return fail(res, err.errors[0].message);
+    fail(res, err.message);
+  }
+});
+
+// PUT /orders/:id/request-completion (WRK — request submitter to confirm)
+router.put('/:id/request-completion', async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const order = await prisma.workOrder.findUnique({ where: { id } });
+    if (!order) return fail(res, '工单不存在', 404);
+    if (order.status !== 'PROCESSING') return fail(res, '当前状态不允许申请完成');
+    if (order.assigneeId !== req.user!.userId) return fail(res, '只有当前维修工可以申请完成', 403);
+
+    const updated = await prisma.workOrder.update({
+      where: { id },
+      data: {
+        status: 'PENDING_CONFIRM',
+        completionRequestedAt: new Date(),
+        confirmStatus: 'PENDING_CONFIRM',
+      },
+    });
+    await prisma.orderLog.create({
+      data: { orderId: id, operatorId: req.user!.userId, action: 'COMPLETION_REQUEST', remark: '维修完成，等待确认' },
+    });
+    // Notify submitter
+    createNotification({
+      userId: order.submitterId,
+      senderId: req.user!.userId,
+      type: 'CONFIRM_REQUEST',
+      title: '工单待确认',
+      content: `工单「${order.title}」维修已完成，请确认`,
+      link: `/orders/${id}`,
+    });
+    success(res, updated, '已申请完成，等待确认');
+  } catch (err: any) { fail(res, err.message); }
+});
+
+// PUT /orders/:id/confirm-completion (submitter — confirm or reject)
+router.put('/:id/confirm-completion', async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const schema = z.object({
+      action: z.enum(['confirm', 'reject']),
+      rejectReason: z.string().optional(),
+    });
+    const body = schema.parse(req.body);
+    const order = await prisma.workOrder.findUnique({ where: { id } });
+    if (!order) return fail(res, '工单不存在', 404);
+    if (order.status !== 'PENDING_CONFIRM') return fail(res, '当前状态不允许此操作');
+    if (order.submitterId !== req.user!.userId) return fail(res, '只有提交人可以确认', 403);
+
+    if (body.action === 'confirm') {
+      const updated = await prisma.workOrder.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+          confirmStatus: 'CONFIRMED',
+          confirmedAt: new Date(),
+          completedAt: new Date(),
+        },
+      });
+      await prisma.orderLog.create({
+        data: { orderId: id, operatorId: req.user!.userId, action: 'CONFIRM', remark: '用户确认完成' },
+      });
+      notifyOrderStakeholders(id, {
+        senderId: req.user!.userId,
+        type: 'ORDER_STATUS',
+        title: '工单已确认完成',
+        content: `工单「${order.title}」已被确认完成`,
+        link: `/orders/${id}`,
+      });
+      return success(res, updated, '工单已确认完成');
+    } else {
+      const updated = await prisma.workOrder.update({
+        where: { id },
+        data: {
+          status: 'PROCESSING',
+          confirmStatus: 'REJECTED',
+          rejectReason: body.rejectReason,
+        },
+      });
+      await prisma.orderLog.create({
+        data: { orderId: id, operatorId: req.user!.userId, action: 'REJECT', remark: body.rejectReason || '用户退回，要求重新维修' },
+      });
+      notifyOrderStakeholders(id, {
+        senderId: req.user!.userId,
+        type: 'ORDER_STATUS',
+        title: '工单被退回',
+        content: body.rejectReason || '用户退回工单，请重新处理',
+        link: `/orders/${id}`,
+      });
+      return success(res, updated, '工单已退回');
+    }
+  } catch (err: any) {
+    if (err instanceof z.ZodError) return fail(res, err.errors[0].message);
+    fail(res, err.message);
+  }
+});
+
+// PUT /orders/:id/reassign (ADM — reassign worker)
+router.put('/:id/reassign', rbac('ADM'), async (req: AuthRequest, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const schema = z.object({ assigneeId: z.number() });
+    const body = schema.parse(req.body);
+    const order = await prisma.workOrder.findUnique({ where: { id } });
+    if (!order) return fail(res, '工单不存在', 404);
+    if (order.status === 'COMPLETED' || order.status === 'CLOSED' || order.status === 'CANCELLED') {
+      return fail(res, '已完成/关闭的工单无法重新指派');
+    }
+
+    const updated = await prisma.workOrder.update({
+      where: { id },
+      data: { assigneeId: body.assigneeId, assignerId: req.user!.userId, status: order.status === 'PENDING' ? 'ASSIGNED' : order.status },
+    });
+    await prisma.orderLog.create({
+      data: { orderId: id, operatorId: req.user!.userId, action: 'REASSIGN', remark: `重新指派维修工 ID:${body.assigneeId}` },
+    });
+    createNotification({
+      userId: body.assigneeId,
+      senderId: req.user!.userId,
+      type: 'ASSIGN',
+      title: '您有新的工单指派',
+      content: `工单「${order.title}」已指派给您处理`,
+      link: `/orders/${id}`,
+    });
+    success(res, updated, '已重新指派');
   } catch (err: any) {
     if (err instanceof z.ZodError) return fail(res, err.errors[0].message);
     fail(res, err.message);
