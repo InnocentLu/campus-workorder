@@ -331,7 +331,7 @@ export default function OrderDetail() {
   /* ---- Permissions ---- */
   const canAssign = user?.role === 'ADM' && order?.status === 'PENDING';
   const canProcess = user?.role === 'WRK' && order?.status === 'ASSIGNED';
-  const canComplete = user?.role === 'WRK' && ['ASSIGNED', 'PROCESSING'].includes(order?.status);
+  const canComplete = user?.role === 'WRK' && order?.status === 'PROCESSING';
   const canRequestComplete = user?.role === 'WRK' && order?.status === 'PROCESSING' && user?.id === order?.assigneeId;
   const canRate = user?.id === order?.submitterId && order?.status === 'COMPLETED';
   const canCancel =
@@ -364,7 +364,7 @@ export default function OrderDetail() {
      ================================================================ */
   if (loading || !order) {
     return (
-      <div className="space-y-6 max-w-4xl" role="status" aria-label="加载中">
+      <div className="space-y-6 max-w-4xl mx-auto" role="status" aria-label="加载中">
         {/* Hero skeleton */}
         <div className="-mx-4 lg:-mx-6 -mt-4 lg:-mt-6 px-4 lg:px-6 pt-8 pb-10 rounded-b-3xl mb-6 overflow-hidden bg-gradient-to-br from-gray-300 via-gray-400 to-gray-500 dark:from-slate-700 dark:via-slate-800 dark:to-slate-900 animate-pulse">
           <Skeleton className="h-4 w-20 bg-white/20 rounded mb-6" />
@@ -422,7 +422,7 @@ export default function OrderDetail() {
      MAIN RENDER
      ================================================================ */
   return (
-    <div className="space-y-6 max-w-4xl pb-28">
+    <div className="space-y-6 max-w-4xl mx-auto pb-28">
       {/* ============================================================
           HERO SECTION
           ============================================================ */}
@@ -1368,7 +1368,7 @@ export default function OrderDetail() {
 
                 {/* Complete - with inline form */}
                 {canComplete && (
-                  <div className="flex flex-wrap items-end gap-3 w-full">
+                  <div className={cn("flex flex-wrap items-end gap-3", showCompleteForm && "w-full")}>
                     {!showCompleteForm ? (
                       <FlowingButton
                         onClick={() => setShowCompleteForm(true)}
@@ -1439,7 +1439,7 @@ export default function OrderDetail() {
 
                 {/* Rate - with inline form */}
                 {canRate && (
-                  <div className="flex flex-wrap items-end gap-3 w-full">
+                  <div className={cn("flex flex-wrap items-end gap-3", showRateForm && "w-full")}>
                     {!showRateForm ? (
                       <FlowingButton
                         onClick={() => setShowRateForm(true)}
