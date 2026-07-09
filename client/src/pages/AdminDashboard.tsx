@@ -29,6 +29,7 @@ import {
   Cell,
   Legend,
 } from 'recharts';
+import * as XLSX from 'xlsx';
 import client from '@/api/client';
 import { cn, formatDate, getStatusLabel, getStatusColor } from '@/lib/utils';
 import {
@@ -74,6 +75,7 @@ interface OrderItem {
 
 interface TrendResponse {
   trend?: TrendItem[];
+  monthlyTrend?: TrendItem[];
   categories?: CategoryItem[];
 }
 
@@ -83,13 +85,13 @@ interface TrendResponse {
 
 const PIE_COLORS = [
   '#1660AB',
-  '#1660AB',
-  '#F59E0B',
-  '#10B981',
-  '#EF4444',
-  '#8B5CF6',
-  '#EC4899',
-  '#06B6D4',
+  '#3A85BF',
+  '#D49B3E',
+  '#3E9B6E',
+  '#B03C3C',
+  '#5C5448',
+  '#8C8475',
+  '#6B8FB5',
 ];
 
 const CHART_CARD_CLASS =
@@ -144,6 +146,7 @@ export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [timeStr, setTimeStr] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -196,10 +199,12 @@ export default function AdminDashboard() {
       if (trendRes.data.code === 200) {
         const raw: TrendResponse | TrendItem[] = trendRes.data.data;
         if (Array.isArray(raw)) {
+          // Legacy: flat array of daily trend — use as monthly fallback
           setTrendData(raw);
           setCategoryData([]);
         } else {
-          setTrendData(raw.trend ?? []);
+          // New format: { trend, monthlyTrend, categories }
+          setTrendData(raw.monthlyTrend ?? raw.trend ?? []);
           setCategoryData(raw.categories ?? []);
         }
       }
@@ -228,8 +233,89 @@ export default function AdminDashboard() {
     fetchData(true);
   };
 
-  const handleExport = () => {
-    toast.info('功能开发中', { description: '报表导出功能即将上线，敬请期待' });
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await client.get('/orders', {
+        params: { page: 1, pageSize: 10000 },
+        timeout: 60000,
+      });
+      const ordersRaw = res.data?.data;
+      const orders = ordersRaw?.list ?? ordersRaw ?? [];
+
+      /* ── Sheet 1: 概览统计 ── */
+      const overviewAoA: (string | number)[][] = [
+        ['指标', '数值'],
+        ['工单总数', overview.total],
+        ['待处理', overview.pending],
+        ['处理中(含已派单)', overview.processing],
+        ['已完成', overview.completed],
+        ['完成率(%)', completionRate],
+        ['导出时间', new Date().toLocaleString('zh-CN')],
+      ];
+      const ws1 = XLSX.utils.aoa_to_sheet(overviewAoA);
+      ws1['!cols'] = [{ wch: 20 }, { wch: 15 }];
+
+      /* ── Sheet 2: 工单明细 ── */
+      const ordersAoA: (string | number)[][] = [
+        ['工单编号', '标题', '分类', '优先级', '状态', '提交人', '维修工', '创建时间'],
+      ];
+      for (const o of orders) {
+        ordersAoA.push([
+          o.orderNo || '',
+          o.title || '',
+          o.category || '',
+          o.priority || '',
+          o.status || '',
+          o.submitterName || o.submitter?.realName || '',
+          o.assignee?.realName || '',
+          o.createdAt ? new Date(o.createdAt).toLocaleString('zh-CN') : '',
+        ]);
+      }
+      const ws2 = XLSX.utils.aoa_to_sheet(ordersAoA);
+      ws2['!cols'] = [{ wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 20 }];
+
+      /* ── Sheet 3: 分类统计 ── */
+      const catAoA: (string | number)[][] = [['报修类型', '工单数']];
+      for (const c of categoryData) {
+        catAoA.push([c.name, c.value]);
+      }
+      const ws3 = XLSX.utils.aoa_to_sheet(catAoA);
+      ws3['!cols'] = [{ wch: 15 }, { wch: 10 }];
+
+      /* ── Sheet 4: 状态统计 ── */
+      const statusLabels: Record<string, string> = {
+        PENDING: '待处理', ASSIGNED: '已派单', PROCESSING: '处理中',
+        COMPLETED: '已完成', REJECTED: '已退回', CLOSED: '已关闭', CANCELLED: '已取消',
+      };
+      const statusAoA: (string | number)[][] = [['状态', '数量']];
+      const statusCounts: Record<string, number> = {};
+      for (const o of orders) {
+        const s = o.status || 'UNKNOWN';
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      }
+      for (const [status, count] of Object.entries(statusCounts)) {
+        statusAoA.push([statusLabels[status] || status, count]);
+      }
+      const ws4 = XLSX.utils.aoa_to_sheet(statusAoA);
+      ws4['!cols'] = [{ wch: 12 }, { wch: 10 }];
+
+      /* ── Build workbook ── */
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws1, '概览统计');
+      XLSX.utils.book_append_sheet(wb, ws2, '工单明细');
+      XLSX.utils.book_append_sheet(wb, ws3, '分类统计');
+      XLSX.utils.book_append_sheet(wb, ws4, '状态统计');
+
+      const fileName = `工单数据报表_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      toast.success('导出成功', { description: `已导出 ${orders.length} 条工单数据` });
+    } catch (err: any) {
+      console.error('Export error:', err);
+      toast.error('导出失败', { description: err?.message || '请稍后重试' });
+    } finally {
+      setExporting(false);
+    }
   };
 
   /* ── Computed values ── */
@@ -597,17 +683,19 @@ export default function AdminDashboard() {
           {/* Export Report */}
           <button
             onClick={handleExport}
+            disabled={exporting}
             className={cn(
               'inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
               'text-gray-600 dark:text-gray-400',
               'hover:bg-gray-100 dark:hover:bg-gray-800',
               'hover:text-gray-900 dark:hover:text-gray-200',
               'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
+              'disabled:opacity-60 disabled:cursor-not-allowed',
             )}
             aria-label="导出报表"
           >
-            <Download className="w-4 h-4" />
-            <span>导出报表</span>
+            <Download className={cn('w-4 h-4', exporting && 'animate-pulse')} />
+            <span>{exporting ? '导出中...' : '导出报表'}</span>
           </button>
         </div>
       </ScrollReveal>

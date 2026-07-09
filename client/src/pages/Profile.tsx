@@ -21,6 +21,7 @@ import {
   StaggerList,
 } from '@/components/animations';
 import AvatarUpload from '@/components/AvatarUpload';
+import DataReportModal from '@/components/DataReportModal';
 import {
   User,
   Lock,
@@ -123,13 +124,14 @@ export default function Profile() {
     trendData: [],
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
 
   /* ── Fetch user stats ── */
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const [ordersRes, trendRes] = await Promise.allSettled([
-          client.get('/orders/my', { params: { page: 1, pageSize: 100 } }),
+          client.get('/orders', { params: { page: 1, pageSize: 100 } }),
           client.get('/statistics/trend'),
         ]);
 
@@ -141,12 +143,11 @@ export default function Profile() {
         let trendData: { date: string; count: number }[] = [];
         if (trendRes.status === 'fulfilled' && trendRes.value.data?.code === 200) {
           const raw = trendRes.value.data.data;
-          if (Array.isArray(raw)) {
-            trendData = raw.map((t: any) => ({
-              date: t.date?.slice(5) || t.label || '', // MM-DD
-              count: t.count || t.value || 0,
-            }));
-          }
+          const dailyArray = Array.isArray(raw) ? raw : (raw?.trend ?? []);
+          trendData = dailyArray.map((t: any) => ({
+            date: t.date?.slice(5) || t.label || '', // MM-DD
+            count: t.count || t.value || 0,
+          }));
         }
 
         // Compute from orders
@@ -692,7 +693,7 @@ export default function Profile() {
             </Button>
             {(role === 'TCH' || role === 'WRK' || role === 'ADM') && (
               <Button
-                onClick={() => toast.info('功能开发中')}
+                onClick={() => setReportOpen(true)}
                 variant="outline"
                 className="flex-1 h-12 rounded-xl font-medium text-sm border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/40 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-300"
               >
@@ -713,6 +714,9 @@ export default function Profile() {
           </div>
         </motion.div>
       </motion.div>
+
+      {/* ── Data Report Modal ── */}
+      <DataReportModal open={reportOpen} onClose={() => setReportOpen(false)} />
     </div>
   );
 }

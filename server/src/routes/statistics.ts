@@ -16,12 +16,28 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
     if (role === 'STU') baseWhere.submitterId = userId;
     if (role === 'WRK') baseWhere.assigneeId = userId;
 
-    const [total, pending, processing, completed] = await Promise.all([
+    // All count queries in parallel for speed
+    const [total, pending, assigned, processing, completed, rejected, closed, cancelled] = await Promise.all([
       prisma.workOrder.count({ where: baseWhere }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'PENDING' } }),
-      prisma.workOrder.count({ where: { ...baseWhere, status: { in: ['ASSIGNED', 'PROCESSING'] } } }),
+      prisma.workOrder.count({ where: { ...baseWhere, status: 'ASSIGNED' } }),
+      prisma.workOrder.count({ where: { ...baseWhere, status: 'PROCESSING' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'COMPLETED' } }),
+      prisma.workOrder.count({ where: { ...baseWhere, status: 'REJECTED' } }),
+      prisma.workOrder.count({ where: { ...baseWhere, status: 'CLOSED' } }),
+      prisma.workOrder.count({ where: { ...baseWhere, status: 'CANCELLED' } }),
     ]);
+
+    // Status breakdown for charts (exclude zero-count statuses)
+    const statusBreakdown = [
+      { name: '待处理', value: pending },
+      { name: '已派单', value: assigned },
+      { name: '处理中', value: processing },
+      { name: '已完成', value: completed },
+      { name: '已退回', value: rejected },
+      { name: '已关闭', value: closed },
+      { name: '已取消', value: cancelled },
+    ].filter((s) => s.value > 0);
 
     // Pending tasks for current user
     let todos: any[] = [];
@@ -41,16 +57,29 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
       });
     }
 
-    success(res, { total, pending, processing, completed, todos });
+    success(res, {
+      total,
+      pending,
+      processing: processing + assigned, // backward compat
+      completed,
+      statusBreakdown,
+      todos,
+    });
   } catch (err: any) {
     fail(res, err.message);
   }
 });
 
-// GET /statistics/trend - 7 day trend
+// GET /statistics/trend - 7 day trend + monthly trend + category distribution
 router.get('/trend', async (req: AuthRequest, res: Response) => {
   try {
     const { role, userId } = req.user!;
+
+    const baseWhere: any = {};
+    if (role === 'STU') baseWhere.submitterId = userId;
+    if (role === 'WRK') baseWhere.assigneeId = userId;
+
+    /* ── 7-day daily trend (all 7 queries in parallel) ── */
     const dates: string[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -58,27 +87,50 @@ router.get('/trend', async (req: AuthRequest, res: Response) => {
       dates.push(d.toISOString().slice(0, 10));
     }
 
-    const baseWhere: any = {};
-    if (role === 'STU') baseWhere.submitterId = userId;
-    if (role === 'WRK') baseWhere.assigneeId = userId;
+    const dailyCounts = await Promise.all(
+      dates.map((date) => {
+        const next = new Date(date);
+        next.setDate(next.getDate() + 1);
+        return prisma.workOrder.count({
+          where: { ...baseWhere, createdAt: { gte: new Date(date), lt: next } },
+        });
+      })
+    );
+    const dailyTrend = dates.map((date, i) => ({ date, count: dailyCounts[i] }));
 
-    const result = [];
-    for (const date of dates) {
-      const next = new Date(date);
-      next.setDate(next.getDate() + 1);
-      const count = await prisma.workOrder.count({
-        where: {
-          ...baseWhere,
-          createdAt: {
-            gte: new Date(date),
-            lt: next,
-          },
-        },
-      });
-      result.push({ date, count });
+    /* ── 6-month monthly trend (all 6 queries in parallel) ── */
+    const monthStarts: Date[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      monthStarts.push(new Date(d.getFullYear(), d.getMonth(), 1));
     }
 
-    success(res, result);
+    const monthlyCounts = await Promise.all(
+      monthStarts.map((start) => {
+        const end = new Date(start.getFullYear(), start.getMonth() + 1, 1);
+        return prisma.workOrder.count({
+          where: { ...baseWhere, createdAt: { gte: start, lt: end } },
+        });
+      })
+    );
+    const monthlyTrend = monthStarts.map((d, i) => ({
+      month: `${d.getMonth() + 1}月`,
+      count: monthlyCounts[i],
+    }));
+
+    /* ── Category distribution ── */
+    const categoryRaw = await prisma.workOrder.groupBy({
+      by: ['category'],
+      where: baseWhere,
+      _count: { category: true },
+    });
+    const categories = categoryRaw
+      .map((c) => ({ name: c.category || '其他', value: c._count.category }))
+      .sort((a, b) => b.value - a.value);
+
+    success(res, { trend: dailyTrend, monthlyTrend, categories });
   } catch (err: any) {
     fail(res, err.message);
   }
