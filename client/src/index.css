@@ -7,51 +7,51 @@
    ═══════════════════════════════════════════════════ */
 @layer base {
   :root {
-    /* ── Primary palette ── */
-    --color-primary: #2563EB;
-    --color-primary-light: #60A5FA;
-    --color-primary-dark: #1D4ED8;
+    /* ── Primary palette — Deep Ocean Blue ── */
+    --color-primary: #1660AB;
+    --color-primary-light: #3A85BF;
+    --color-primary-dark: #0F4A85;
     --color-on-primary: #FFFFFF;
-    --color-secondary: #3B82F6;
+    --color-secondary: #3A85BF;
     --color-accent: #059669;
     --color-accent-light: #10B981;
 
     /* ── Status colors ── */
-    --status-pending: #F59E0B;
-    --status-assigned: #8B5CF6;
-    --status-processing: #7C3AED;
-    --status-completed: #10B981;
-    --status-closed: #6B7280;
-    --status-cancelled: #EF4444;
+    --status-pending: #D49B3E;
+    --status-assigned: #7B6FDE;
+    --status-processing: #1660AB;
+    --status-completed: #3E9B6E;
+    --status-closed: #8B8B8B;
+    --status-cancelled: #B03C3C;
 
-    /* ── Surface colors ── */
-    --color-bg: #F8FAFC;
-    --color-bg-alt: #EFF6FF;
-    --color-surface: #FFFFFF;
-    --color-surface-hover: #F8FAFC;
-    --color-muted: #F1F5FD;
-    --color-border: #E4ECFC;
-    --color-border-hover: #CBD5E1;
+    /* ── Surface colors — Warm Cream ── */
+    --color-bg: #F9F2E0;
+    --color-bg-alt: #F5EDD6;
+    --color-surface: #FFFDF9;
+    --color-surface-hover: #F9F2E0;
+    --color-muted: #F3ECDA;
+    --color-border: #E8DFC8;
+    --color-border-hover: #D4C8A8;
 
-    /* ── Text colors ── */
-    --color-foreground: #0F172A;
-    --color-foreground-secondary: #475569;
-    --color-foreground-muted: #94A3B8;
-    --color-destructive: #DC2626;
+    /* ── Text colors — Warm Dark ── */
+    --color-foreground: #2C2416;
+    --color-foreground-secondary: #5C5040;
+    --color-foreground-muted: #9A8E7A;
+    --color-destructive: #B03C3C;
 
-    /* ── Glass morphism ── */
-    --glass-bg: rgba(255, 255, 255, 0.72);
-    --glass-bg-strong: rgba(255, 255, 255, 0.88);
-    --glass-border: rgba(37, 99, 235, 0.08);
-    --glass-border-hover: rgba(37, 99, 235, 0.15);
+    /* ── Glass morphism — Cream tinted ── */
+    --glass-bg: rgba(255, 253, 249, 0.75);
+    --glass-bg-strong: rgba(255, 253, 249, 0.90);
+    --glass-border: rgba(22, 96, 171, 0.06);
+    --glass-border-hover: rgba(22, 96, 171, 0.14);
 
     /* ── Shadows (unified scale) ── */
-    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-    --shadow-sm: 0 2px 8px rgba(37, 99, 235, 0.06);
-    --shadow-md: 0 8px 24px rgba(37, 99, 235, 0.08);
-    --shadow-lg: 0 12px 36px rgba(37, 99, 235, 0.10);
-    --shadow-xl: 0 20px 48px rgba(37, 99, 235, 0.12);
-    --shadow-glow: 0 0 24px rgba(37, 99, 235, 0.18);
+    --shadow-xs: 0 1px 2px rgba(44, 36, 22, 0.04);
+    --shadow-sm: 0 2px 8px rgba(22, 96, 171, 0.05);
+    --shadow-md: 0 8px 24px rgba(22, 96, 171, 0.07);
+    --shadow-lg: 0 12px 36px rgba(22, 96, 171, 0.09);
+    --shadow-xl: 0 20px 48px rgba(22, 96, 171, 0.11);
+    --shadow-glow: 0 0 24px rgba(22, 96, 171, 0.16);
 
     /* ── Radius (unified scale) ── */
     --radius-xs: 0.375rem;   /* 6px  — chips, badges */
@@ -77,28 +77,28 @@
 
   /* ── Dark mode overrides ── */
   .dark {
-    --color-bg: #0F172A;
-    --color-bg-alt: #1E293B;
-    --color-surface: #1E293B;
-    --color-surface-hover: #334155;
-    --color-muted: #1E293B;
-    --color-border: #334155;
-    --color-border-hover: #475569;
+    --color-bg: #1A1C1E;
+    --color-bg-alt: #252728;
+    --color-surface: #252728;
+    --color-surface-hover: #303235;
+    --color-muted: #252728;
+    --color-border: #383A3D;
+    --color-border-hover: #4A4D50;
 
-    --color-foreground: #F1F5F9;
-    --color-foreground-secondary: #CBD5E1;
-    --color-foreground-muted: #64748B;
+    --color-foreground: #EDE8DE;
+    --color-foreground-secondary: #B8B0A0;
+    --color-foreground-muted: #6B6560;
 
-    --glass-bg: rgba(30, 41, 59, 0.72);
-    --glass-bg-strong: rgba(30, 41, 59, 0.88);
-    --glass-border: rgba(148, 163, 184, 0.10);
+    --glass-bg: rgba(37, 39, 40, 0.72);
+    --glass-bg-strong: rgba(37, 39, 40, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.06);
 
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.20);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
-    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.30);
-    --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.35);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.30);
+    --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.35);
+    --shadow-xl: 0 20px 48px rgba(0, 0, 0, 0.40);
 
-    --color-ring: #60A5FA;
+    --color-ring: #3A85BF;
   }
 
   /* ── Reset ── */
@@ -134,18 +134,18 @@
     background:
       /* Layer 1: Deep blue wave blob — drifts slowly right */
       radial-gradient(ellipse 1400px 700px at 15% 85%,
-        rgba(37, 99, 235, 0.06) 0%, transparent 55%),
+        rgba(22, 96, 171, 0.05) 0%, transparent 55%),
       /* Layer 2: Light blue wave blob — drifts left */
       radial-gradient(ellipse 1100px 550px at 80% 15%,
-        rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-      /* Layer 3: Purple accent blob — gentle pulse */
+        rgba(58, 133, 191, 0.035) 0%, transparent 50%),
+      /* Layer 3: Warm gold accent */
       radial-gradient(ellipse 900px 450px at 55% 55%,
-        rgba(124, 58, 237, 0.03) 0%, transparent 45%),
-      /* Layer 4: Teal accent blob */
+        rgba(196, 164, 100, 0.04) 0%, transparent 45%),
+      /* Layer 4: Teal accent */
       radial-gradient(ellipse 1000px 500px at 30% 40%,
-        rgba(5, 150, 105, 0.03) 0%, transparent 50%),
-      /* Base gradient */
-      linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F0F5FF 100%);
+        rgba(62, 155, 110, 0.025) 0%, transparent 50%),
+      /* Base gradient — warm cream */
+      linear-gradient(180deg, #F9F2E0 0%, #F5EDD6 50%, #F3EAD0 100%);
     background-size: 220% 220%, 200% 200%, 180% 180%, 200% 200%, 100% 100%;
     animation: seawater-flow 28s ease-in-out infinite;
     will-change: background-position;
@@ -156,14 +156,14 @@
     body::before {
       background:
         radial-gradient(ellipse 1400px 700px at 15% 85%,
-          rgba(37, 99, 235, 0.03) 0%, transparent 55%),
+          rgba(22, 96, 171, 0.025) 0%, transparent 55%),
         radial-gradient(ellipse 1100px 550px at 80% 15%,
-          rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+          rgba(58, 133, 191, 0.018) 0%, transparent 50%),
         radial-gradient(ellipse 900px 450px at 55% 55%,
-          rgba(124, 58, 237, 0.015) 0%, transparent 45%),
+          rgba(196, 164, 100, 0.02) 0%, transparent 45%),
         radial-gradient(ellipse 1000px 500px at 30% 40%,
-          rgba(5, 150, 105, 0.015) 0%, transparent 50%),
-        linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 50%, #F0F5FF 100%);
+          rgba(62, 155, 110, 0.012) 0%, transparent 50%),
+        linear-gradient(180deg, #F9F2E0 0%, #F5EDD6 50%, #F3EAD0 100%);
     }
   }
 
@@ -171,14 +171,14 @@
   .dark body::before {
     background:
       radial-gradient(ellipse 1400px 700px at 15% 85%,
-        rgba(37, 99, 235, 0.10) 0%, transparent 55%),
+        rgba(58, 133, 191, 0.08) 0%, transparent 55%),
       radial-gradient(ellipse 1100px 550px at 80% 15%,
-        rgba(59, 130, 246, 0.07) 0%, transparent 50%),
+        rgba(22, 96, 171, 0.06) 0%, transparent 50%),
       radial-gradient(ellipse 900px 450px at 55% 55%,
-        rgba(124, 58, 237, 0.06) 0%, transparent 45%),
+        rgba(196, 164, 100, 0.05) 0%, transparent 45%),
       radial-gradient(ellipse 1000px 500px at 30% 40%,
-        rgba(5, 150, 105, 0.05) 0%, transparent 50%),
-      linear-gradient(180deg, #0F172A 0%, #1E293B 50%, #1A2332 100%);
+        rgba(62, 155, 110, 0.04) 0%, transparent 50%),
+      linear-gradient(180deg, #1A1C1E 0%, #252728 50%, #1E2022 100%);
   }
 
   /* Reduced motion: freeze seawater, no animation */
@@ -306,7 +306,7 @@
 
   /* ── Gradient text ── */
   .text-gradient {
-    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    background: linear-gradient(135deg, #1660AB, #3A85BF);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -337,7 +337,7 @@
   }
   .focus-ring:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 0 0 3px rgba(22, 96, 171, 0.25);
     border-color: var(--color-primary);
   }
 
@@ -417,9 +417,9 @@
     font-weight: 600;
     font-size: 0.875rem;
     color: white;
-    background: linear-gradient(135deg, #2563EB, #7C3AED);
+    background: linear-gradient(135deg, #1660AB, #3A85BF);
     transition: all var(--transition-base);
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 4px 14px rgba(22, 96, 171, 0.25);
   }
   .btn-primary:hover { box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); transform: translateY(-1px); }
   .btn-primary:active { transform: translateY(0); }
