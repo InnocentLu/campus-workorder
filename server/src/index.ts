@@ -53,6 +53,13 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/statistics', statisticsRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 
+// Serve frontend static files
+import path from 'path';
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ code: 200, message: 'OK', timestamp: new Date().toISOString() });
