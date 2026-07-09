@@ -33,7 +33,10 @@ export default function Dashboard() {
       client.get('/statistics/trend'),
     ]).then(([overRes, trendRes]) => {
       if (overRes.data.code === 200) setOverview(overRes.data.data);
-      if (trendRes.data.code === 200) setTrend(trendRes.data.data);
+      if (trendRes.data.code === 200) {
+        const raw = trendRes.data.data;
+        setTrend(Array.isArray(raw) ? raw : (raw?.trend ?? []));
+      }
     }).finally(() => setLoading(false));
   }, []);
 
