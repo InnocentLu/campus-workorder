@@ -82,8 +82,8 @@ interface TrendResponse {
    ═══════════════════════════════════════════════════ */
 
 const PIE_COLORS = [
-  '#2563EB',
-  '#7C3AED',
+  '#1660AB',
+  '#1660AB',
   '#F59E0B',
   '#10B981',
   '#EF4444',
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
         label: '今日报修工单',
         value: overview.todayCount ?? overview.total,
         icon: ClipboardList,
-        color: '#2563EB',
+        color: '#1660AB',
         bgLight: 'bg-blue-50',
         bgDark: 'dark:bg-blue-900/30',
         iconColor: 'text-blue-600 dark:text-blue-400',
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
         label: '维修人员接单量',
         value: overview.assignedCount ?? overview.processing,
         icon: Users,
-        color: '#7C3AED',
+        color: '#1660AB',
         bgLight: 'bg-purple-50',
         bgDark: 'dark:bg-purple-900/30',
         iconColor: 'text-purple-600 dark:text-purple-400',
@@ -447,8 +447,8 @@ export default function AdminDashboard() {
                         x2="0"
                         y2="1"
                       >
-                        <stop offset="0%" stopColor="#2563EB" stopOpacity={0.9} />
-                        <stop offset="100%" stopColor="#2563EB" stopOpacity={0.3} />
+                        <stop offset="0%" stopColor="#1660AB" stopOpacity={0.9} />
+                        <stop offset="100%" stopColor="#1660AB" stopOpacity={0.3} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid

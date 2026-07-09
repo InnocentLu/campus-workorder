@@ -233,7 +233,7 @@ export default function Profile() {
         label: '我的工单',
         value: stats.total,
         icon: ClipboardList,
-        color: '#2563EB',
+        color: '#1660AB',
         bg: 'bg-blue-50 dark:bg-blue-900/20',
         iconBg: 'bg-blue-100 dark:bg-blue-800/30',
       },
@@ -271,7 +271,7 @@ export default function Profile() {
         label: '待审批',
         value: stats.pendingAssignments || 0,
         icon: FileText,
-        color: '#7C3AED',
+        color: '#1660AB',
         bg: 'bg-purple-50 dark:bg-purple-900/20',
         iconBg: 'bg-purple-100 dark:bg-purple-800/30',
       });
@@ -541,8 +541,8 @@ export default function Profile() {
                   >
                     <defs>
                       <linearGradient id="profileTrend" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563EB" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="#2563EB" stopOpacity={0.02} />
+                        <stop offset="0%" stopColor="#1660AB" stopOpacity={0.25} />
+                        <stop offset="100%" stopColor="#1660AB" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <XAxis
@@ -570,11 +570,11 @@ export default function Profile() {
                     <Area
                       type="monotone"
                       dataKey="count"
-                      stroke="#2563EB"
+                      stroke="#1660AB"
                       strokeWidth={2}
                       fill="url(#profileTrend)"
-                      dot={{ r: 3, fill: '#2563EB', strokeWidth: 0 }}
-                      activeDot={{ r: 5, fill: '#2563EB' }}
+                      dot={{ r: 3, fill: '#1660AB', strokeWidth: 0 }}
+                      activeDot={{ r: 5, fill: '#1660AB' }}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -629,7 +629,7 @@ export default function Profile() {
                             : order.status === 'ASSIGNED'
                             ? '#8B5CF6'
                             : order.status === 'PROCESSING'
-                            ? '#7C3AED'
+                            ? '#1660AB'
                             : order.status === 'COMPLETED'
                             ? '#10B981'
                             : order.status === 'CLOSED'
@@ -668,7 +668,7 @@ export default function Profile() {
             {(role === 'STU' || role === 'TCH') && (
               <Button
                 onClick={() => navigate('/orders/submit')}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#7C3AED] text-white font-medium text-sm hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-[#1660AB] to-[#1660AB] text-white font-medium text-sm hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
               >
                 <PlusCircle className="w-4 h-4 mr-2" />
                 快速报修

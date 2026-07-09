@@ -48,7 +48,7 @@ function getStatusDotColor(status: string): string {
   const map: Record<string, string> = {
     PENDING: '#F59E0B',
     ASSIGNED: '#8B5CF6',
-    PROCESSING: '#7C3AED',
+    PROCESSING: '#1660AB',
     COMPLETED: '#10B981',
     CLOSED: '#6B7280',
     CANCELLED: '#EF4444',

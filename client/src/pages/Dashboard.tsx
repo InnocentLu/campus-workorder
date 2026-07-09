@@ -38,9 +38,9 @@ export default function Dashboard() {
   }, []);
 
   const stats = [
-    { label: '工单总数', value: overview.total, icon: ClipboardList, color: '#2563EB', bg: 'bg-blue-50' },
+    { label: '工单总数', value: overview.total, icon: ClipboardList, color: '#1660AB', bg: 'bg-blue-50' },
     { label: '待处理', value: overview.pending, icon: AlertCircle, color: '#F59E0B', bg: 'bg-amber-50' },
-    { label: '处理中', value: overview.processing, icon: Clock, color: '#7C3AED', bg: 'bg-purple-50' },
+    { label: '处理中', value: overview.processing, icon: Clock, color: '#1660AB', bg: 'bg-purple-50' },
     { label: '已完成', value: overview.completed, icon: CheckCircle2, color: '#10B981', bg: 'bg-emerald-50' },
   ];
 
@@ -128,8 +128,8 @@ export default function Dashboard() {
                 <AreaChart data={trend}>
                   <defs>
                     <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2563EB" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="#2563EB" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#1660AB" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#1660AB" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -138,7 +138,7 @@ export default function Dashboard() {
                   <Tooltip
                     contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}
                   />
-                  <Area type="monotone" dataKey="count" name="工单数" stroke="#2563EB" strokeWidth={3} fill="url(#trendGradient)" dot={{ r: 5, fill: '#2563EB', strokeWidth: 2, stroke: '#fff' }} />
+                  <Area type="monotone" dataKey="count" name="工单数" stroke="#1660AB" strokeWidth={3} fill="url(#trendGradient)" dot={{ r: 5, fill: '#1660AB', strokeWidth: 2, stroke: '#fff' }} />
                 </AreaChart>
               </ResponsiveContainer>
             )}

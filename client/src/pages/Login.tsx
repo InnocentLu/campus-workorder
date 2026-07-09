@@ -220,11 +220,11 @@ export default function Login() {
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/[0.04] dark:shadow-black/30 border border-gray-100 dark:border-gray-800/60 p-6 sm:p-8">
             {/* ── Campus Logo ── */}
             <motion.div variants={staggerItem} className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 bg-gradient-to-br from-[#2563EB] to-[#7C3AED] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#1660AB] to-[#1660AB] rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <School className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-[#1E3A5F] dark:text-white tracking-tight leading-tight">
+                <h2 className="text-xl font-bold text-[#1660AB] dark:text-white tracking-tight leading-tight">
                   校园工单
                 </h2>
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 tracking-wide">
@@ -248,7 +248,7 @@ export default function Login() {
                 className={cn(
                   'flex-1 h-10 rounded-lg text-sm font-medium transition-all duration-300',
                   isLogin
-                    ? 'bg-white dark:bg-gray-700 text-[#2563EB] dark:text-blue-400 shadow-sm'
+                    ? 'bg-white dark:bg-gray-700 text-[#1660AB] dark:text-blue-400 shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
                 )}
               >
@@ -262,7 +262,7 @@ export default function Login() {
                 className={cn(
                   'flex-1 h-10 rounded-lg text-sm font-medium transition-all duration-300',
                   !isLogin
-                    ? 'bg-white dark:bg-gray-700 text-[#2563EB] dark:text-blue-400 shadow-sm'
+                    ? 'bg-white dark:bg-gray-700 text-[#1660AB] dark:text-blue-400 shadow-sm'
                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300',
                 )}
               >
@@ -314,7 +314,7 @@ export default function Login() {
                 >
                   {/* Username */}
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type="text"
                       placeholder="用户名 / 学号"
@@ -328,7 +328,7 @@ export default function Login() {
 
                   {/* Password */}
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type={showPassword ? 'text' : 'password'}
                       placeholder="密码"
@@ -355,7 +355,7 @@ export default function Login() {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={() => setRememberMe(!rememberMe)}
-                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#2563EB] focus:ring-[#2563EB] focus:ring-offset-0 accent-[#2563EB]"
+                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-[#1660AB] focus:ring-[#1660AB] focus:ring-offset-0 accent-[#1660AB]"
                       />
                       <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
                         记住我
@@ -363,7 +363,7 @@ export default function Login() {
                     </label>
                     <button
                       type="button"
-                      className="text-sm text-[#2563EB] dark:text-blue-400 hover:text-[#1D4ED8] dark:hover:text-blue-300 font-medium transition-colors"
+                      className="text-sm text-[#1660AB] dark:text-blue-400 hover:text-[#1D4ED8] dark:hover:text-blue-300 font-medium transition-colors"
                     >
                       忘记密码？
                     </button>
@@ -377,7 +377,7 @@ export default function Login() {
                     whileTap={{ scale: 0.98 }}
                     className={cn(
                       'w-full h-12 rounded-xl font-semibold text-white text-sm',
-                      'bg-gradient-to-r from-[#2563EB] to-[#7C3AED]',
+                      'bg-gradient-to-r from-[#1660AB] to-[#1660AB]',
                       'hover:shadow-lg hover:shadow-purple-500/25',
                       'transition-all duration-300 relative overflow-hidden',
                       'disabled:opacity-60 disabled:cursor-not-allowed',
@@ -409,7 +409,7 @@ export default function Login() {
                 >
                   {/* Real name */}
                   <div className="relative group">
-                    <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <IdCard className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type="text"
                       placeholder="请输入真实姓名"
@@ -423,7 +423,7 @@ export default function Login() {
 
                   {/* Username */}
                   <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type="text"
                       placeholder="请设置登录账号（4-20位字母或数字）"
@@ -438,7 +438,7 @@ export default function Login() {
                   {/* Student ID + Role row */}
                   <div className="flex gap-3">
                     <div className="relative flex-[2] group">
-                      <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                      <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                       <input
                         type="text"
                         placeholder="请输入学号或工号"
@@ -449,7 +449,7 @@ export default function Login() {
                       />
                     </div>
                     <div className="relative flex-1 group">
-                      <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10 transition-colors group-focus-within:text-[#2563EB]" />
+                      <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none z-10 transition-colors group-focus-within:text-[#1660AB]" />
                       <select
                         value={regForm.role}
                         onChange={(e) => updateReg({ role: e.target.value as 'STU' | 'TCH' })}
@@ -463,7 +463,7 @@ export default function Login() {
 
                   {/* Department */}
                   <div className="relative group">
-                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type="text"
                       placeholder="请输入院系或部门名称"
@@ -476,7 +476,7 @@ export default function Login() {
 
                   {/* Phone */}
                   <div className="relative group">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type="tel"
                       placeholder="请输入手机号（选填）"
@@ -489,7 +489,7 @@ export default function Login() {
 
                   {/* Password */}
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type={showRegPwd ? 'text' : 'password'}
                       placeholder="请设置密码（至少6位）"
@@ -511,7 +511,7 @@ export default function Login() {
 
                   {/* Confirm password */}
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#2563EB]" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none transition-colors group-focus-within:text-[#1660AB]" />
                     <input
                       type={showRegConfirm ? 'text' : 'password'}
                       placeholder="请再次输入密码"
@@ -539,7 +539,7 @@ export default function Login() {
                     whileTap={{ scale: 0.98 }}
                     className={cn(
                       'w-full h-12 rounded-xl font-semibold text-white text-sm',
-                      'bg-gradient-to-r from-[#2563EB] to-[#7C3AED]',
+                      'bg-gradient-to-r from-[#1660AB] to-[#1660AB]',
                       'hover:shadow-lg hover:shadow-purple-500/25',
                       'transition-all duration-300 relative overflow-hidden',
                       'disabled:opacity-60 disabled:cursor-not-allowed',
@@ -570,7 +570,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => switchTab(false)}
-                    className="text-[#2563EB] dark:text-blue-400 font-medium hover:text-[#1D4ED8] dark:hover:text-blue-300 transition-colors"
+                    className="text-[#1660AB] dark:text-blue-400 font-medium hover:text-[#1D4ED8] dark:hover:text-blue-300 transition-colors"
                   >
                     立即注册
                   </button>
@@ -581,7 +581,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => switchTab(true)}
-                    className="text-[#2563EB] dark:text-blue-400 font-medium hover:text-[#1D4ED8] dark:hover:text-blue-300 transition-colors"
+                    className="text-[#1660AB] dark:text-blue-400 font-medium hover:text-[#1D4ED8] dark:hover:text-blue-300 transition-colors"
                   >
                     去登录
                   </button>
@@ -597,7 +597,7 @@ export default function Login() {
           RIGHT — Immersive Brand Showcase (55%)
           ═══════════════════════════════════════════ */}
       <motion.div
-        className="hidden md:flex w-full md:w-[55%] relative overflow-hidden bg-gradient-to-br from-[#1E3A5F] via-[#2563EB] to-[#7C3AED] items-center justify-center"
+        className="hidden md:flex w-full md:w-[55%] relative overflow-hidden bg-gradient-to-br from-[#1660AB] via-[#1660AB] to-[#1660AB] items-center justify-center"
         variants={rightPanel}
       >
         {/* ── Rotating rings ── */}

@@ -123,20 +123,20 @@ function getStatusBadgeLight(status: string): string {
 function getHeroBg(status: string): { from: string; to: string } {
   const map: Record<string, { from: string; to: string }> = {
     PENDING: { from: '#F59E0B', to: '#D97706' },
-    ASSIGNED: { from: '#6366F1', to: '#7C3AED' },
-    PROCESSING: { from: '#7C3AED', to: '#6D28D9' },
+    ASSIGNED: { from: '#1660AB', to: '#1660AB' },
+    PROCESSING: { from: '#1660AB', to: '#0F4A85' },
     COMPLETED: { from: '#10B981', to: '#059669' },
     CLOSED: { from: '#6B7280', to: '#4B5563' },
     CANCELLED: { from: '#EF4444', to: '#DC2626' },
   };
-  return map[status] || { from: '#2563EB', to: '#1D4ED8' };
+  return map[status] || { from: '#1660AB', to: '#1D4ED8' };
 }
 
 function getStatusDotColor(status: string): string {
   const map: Record<string, string> = {
     PENDING: '#F59E0B',
     ASSIGNED: '#8B5CF6',
-    PROCESSING: '#7C3AED',
+    PROCESSING: '#1660AB',
     COMPLETED: '#10B981',
     CLOSED: '#6B7280',
     CANCELLED: '#EF4444',
