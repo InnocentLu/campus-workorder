@@ -80,8 +80,16 @@ export default function DataReportModal({ open, onClose }: DataReportModalProps)
         client.get('/statistics/overview'),
         client.get('/statistics/trend'),
       ]);
-      setOverview(overviewRes.data as OverviewData);
-      setTrend(trendRes.data as TrendData);
+
+      const overviewData = overviewRes.data?.code === 200 ? overviewRes.data.data : null;
+      const trendData = trendRes.data?.code === 200 ? trendRes.data.data : null;
+
+      if (!overviewData || !trendData) {
+        throw new Error(overviewRes.data?.message || trendRes.data?.message || '数据加载失败');
+      }
+
+      setOverview(overviewData as OverviewData);
+      setTrend(trendData as TrendData);
       setFetchState('success');
     } catch (err) {
       const message =
@@ -104,7 +112,8 @@ export default function DataReportModal({ open, onClose }: DataReportModalProps)
         params: { page: 1, pageSize: 10000 },
         timeout: 60000,
       });
-      const orders = ordersRes.data?.list ?? ordersRes.data?.data ?? [];
+      const ordersRaw = ordersRes.data?.data;
+      const orders = ordersRaw?.list ?? ordersRaw ?? [];
 
       // Sheet 1: 概览统计
       const overviewSheet = XLSX.utils.aoa_to_sheet([

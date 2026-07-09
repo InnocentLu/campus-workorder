@@ -16,14 +16,13 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
     if (role === 'STU') baseWhere.submitterId = userId;
     if (role === 'WRK') baseWhere.assigneeId = userId;
 
-    // All count queries in parallel for speed
-    const [total, pending, assigned, processing, completed, rejected, closed, cancelled] = await Promise.all([
+    // All count queries in parallel for speed (OrderStatus enum: PENDING/ASSIGNED/PROCESSING/COMPLETED/CLOSED/CANCELLED)
+    const [total, pending, assigned, processing, completed, closed, cancelled] = await Promise.all([
       prisma.workOrder.count({ where: baseWhere }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'PENDING' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'ASSIGNED' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'PROCESSING' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'COMPLETED' } }),
-      prisma.workOrder.count({ where: { ...baseWhere, status: 'REJECTED' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'CLOSED' } }),
       prisma.workOrder.count({ where: { ...baseWhere, status: 'CANCELLED' } }),
     ]);
@@ -34,7 +33,6 @@ router.get('/overview', async (req: AuthRequest, res: Response) => {
       { name: '已派单', value: assigned },
       { name: '处理中', value: processing },
       { name: '已完成', value: completed },
-      { name: '已退回', value: rejected },
       { name: '已关闭', value: closed },
       { name: '已取消', value: cancelled },
     ].filter((s) => s.value > 0);
